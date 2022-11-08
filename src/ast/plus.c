@@ -10,7 +10,6 @@ int compile_plus(struct node *n, struct compiler *c) {
 }
 
 void dispose_plus(struct node *n) {
-	puts("freeing plus");
 	struct plus *p = (struct plus *) n->data;
 	if (p->l != NULL) p->l->dispose(p->l);
 	if (p->r != NULL) p->r->dispose(p->r);

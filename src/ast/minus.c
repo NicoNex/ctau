@@ -10,7 +10,6 @@ int compile_minus(struct node *n, struct compiler *c) {
 }
 
 void dispose_minus(struct node *n) {
-	puts("freeing minus");
 	struct minus *m = (struct minus *) n->data;
 	if (m->l != NULL) m->l->dispose(m->l);
 	if (m->r != NULL) m->r->dispose(m->r);
