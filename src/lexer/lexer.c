@@ -172,7 +172,7 @@ static void lex_expression(struct lexer *l) {
 
 	if (is_space(c)) {
 		ignore(l);
-		goto end;
+		return;
 	} else if (isalpha(c)) {
 		backup(l);
 		SETSTATE(lex_identifier);
@@ -182,38 +182,48 @@ static void lex_expression(struct lexer *l) {
 	case '\n':
 		emit(l, item_semicolon);
 		ignore_spaces(l);
-		break;
+		return;
 
 	case '(':
 		emit(l, item_lparen);
 		ignore_spaces(l);
-		break;
+		return;
 
 	case ')':
 		emit(l, item_rparen);
 		ignore_spaces(l);
-		break;
+		return;
 
 	case '{':
 		emit(l, item_lbrace);
 		ignore_spaces(l);
-		break;
+		return;
 
 	case '}':
 		emit(l, item_rbrace);
 		ignore_spaces(l);
-		break;
+		return;
 
 	case ',':
 		emit(l, item_comma);
 		ignore_spaces(l);
-		break;
+		return;
 
 	case '+':
 		SETSTATE(lex_plus);
 
 	case '-':
 		SETSTATE(lex_minus);
+
+	case '=': {
+		if (next(l) == '=') {
+			emit(l, item_equals);
+		} else {
+			backup(l);
+			emit(l, item_assign);
+		}
+		return;
+	}
 
 	case eof:
 		emit(l, item_eof);
@@ -229,7 +239,6 @@ static void lex_expression(struct lexer *l) {
 	}
 	}
 
-end:
 	l->state = lex_expression;
 }
 
