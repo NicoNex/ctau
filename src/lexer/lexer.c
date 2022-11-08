@@ -52,7 +52,12 @@ static inline int accept(struct lexer *l, char *valid) {
 }
 
 static inline void accept_run(struct lexer *l, char *valid) {
-	while (index_char(valid, next(l)) >= 0) {}
+	int c = next(l);
+
+	while (c != eof && index_char(valid, c) >= 0) {
+		c = next(l);
+	}
+
 	backup(l);
 }
 
