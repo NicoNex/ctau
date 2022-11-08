@@ -13,9 +13,12 @@ struct lexer {
 	int width;
 	int nitems;
 	struct item *items;
-	void (*statefn)(const struct lexer *l) state;
+	void (*state)(struct lexer *l);
 };
 
-typedef void (*statefn)(const struct lexer *l);
+typedef void (*statefn)(struct lexer *l);
+
+struct lexer new_lexer(char *input, size_t len);
+void lexer_run(struct lexer *l);
 
 #endif

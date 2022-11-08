@@ -1,4 +1,6 @@
+#include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 #include "lexer.h"
 #include "../item/item.h"
 
@@ -60,14 +62,14 @@ static inline void accept_until(struct lexer *l, char end) {
 }
 
 static inline void emit(struct lexer *l, enum item_type type) {
-	struct string s = slice_str(l->input + l->start, l->pos - l->start);
+	struct string s = slice_str(&l->input[l->start], l->pos - l->start);
 
-	l->items = reallocarray(l->items, ++l->nitems, sizeof(struct item *));
+	l->items = reallocarray(l->items, ++l->nitems, sizeof(struct item));
 	l->items[l->nitems-1] = new_item(s, type, l->pos);
 }
 
 static inline struct string current_str(struct lexer *l) {
-	return slice_str(l->input, l->start, l->pos);
+	return slice_str(&l->input[l->start], l->pos - l->start);
 }
 
 static inline void ignore_spaces(struct lexer *l) {
@@ -83,16 +85,16 @@ static inline int is_number(int c) {
 	return c == '+' || c == '-' || isdigit(c);
 }
 
-static void lex_expression(const struct lexer *l);
+static void lex_expression(struct lexer *l);
 
-static void lex_identifier(const struct lexer *l) {
+static void lex_identifier(struct lexer *l) {
 	char *accepted = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 	accept_run(l, accepted);
 	emit(l, lookup_type(current_str(l)));
 	l->state = lex_expression;
 }
 
-static void lex_plus(const struct lexer *l) {
+static void lex_plus(struct lexer *l) {
 	switch (next(l)) {
 	case '=':
 		emit(l, item_plus_assign);
@@ -111,7 +113,7 @@ static void lex_plus(const struct lexer *l) {
 	l->state = lex_expression;
 }
 
-static void lex_minus(const struct lexer *l) {
+static void lex_minus(struct lexer *l) {
 	switch (next(l)) {
 	case '=':
 		emit(l, item_minus_assign);
@@ -130,7 +132,7 @@ static void lex_minus(const struct lexer *l) {
 	l->state = lex_expression;
 }
 
-static void lex_number(const struct lexer *l) {
+static void lex_number(struct lexer *l) {
 	enum item_type type = item_int;
 	char *digits = "0123456789";
 
@@ -147,7 +149,7 @@ static void lex_number(const struct lexer *l) {
 	// Is it a float?
 	if (accept(l, ".")) {
 		type = item_float;
-		accept_run(l, digits)
+		accept_run(l, digits);
 	}
 
 	if (accept(l, "eE")) {
@@ -160,7 +162,7 @@ static void lex_number(const struct lexer *l) {
 	l->state = lex_expression;
 }
 
-static void lex_expression(const struct lexer *l) {
+static void lex_expression(struct lexer *l) {
 	int c = next(l);
 
 	if (is_space(c)) {
@@ -208,12 +210,16 @@ static void lex_expression(const struct lexer *l) {
 	case '-':
 		SETSTATE(lex_minus);
 
+	case eof:
+		emit(l, item_eof);
+		SETSTATE(NULL);
+
 	default: {
 		if (is_number(c)) {
 			backup(l);
 			SETSTATE(lex_number);
 		}
-		printf("lexer: invalid item \"%c\"", c);
+		printf("lexer: invalid item \"%c\"\n", c);
 		exit(1);
 	}
 	}
@@ -222,11 +228,24 @@ end:
 	l->state = lex_expression;
 }
 
-static void run(const struct lexer *l) {
+void lexer_run(struct lexer *l) {
 	ignore_spaces(l);
 	l->state = lex_expression;
 
 	while (l->state != NULL) {
 		l->state(l);
 	}
+}
+
+struct lexer new_lexer(char *input, size_t len) {
+	struct lexer l;
+
+	l.input = input;
+	l.len = len;
+	l.pos = 0;
+	l.width = 1;
+	l.nitems = 0;
+	l.items = NULL;
+	l.state = NULL;
+	return l;
 }

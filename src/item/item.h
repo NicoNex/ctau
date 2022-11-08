@@ -77,7 +77,7 @@ enum item_type {
 struct string {
 	char *val;
 	size_t len;
-}
+};
 
 struct item {
 	enum item_type type;
@@ -86,7 +86,8 @@ struct item {
 };
 
 struct item new_item(struct string lit, enum item_type type, int pos);
-enum item_type lookup_type(const char *ident, size_t len);
-struct string slice_str(struct string s);
+enum item_type lookup_type(struct string s);
+struct string slice_str(char *s, size_t len);
+void print_item(struct item *i);
 
 #endif
