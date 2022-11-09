@@ -314,6 +314,7 @@ struct lexer new_lexer(char *input, size_t len) {
 
 	l.input = input;
 	l.len = len;
+	l.start = 0;
 	l.pos = 0;
 	l.width = 1;
 	l.nitems = 0;

@@ -12,7 +12,7 @@ struct parser {
 	int index;
 	struct item cur;
 	struct item peek;
-	uint nested_loops;
+	uint32_t nested_loops;
 };
 
 typedef struct node *(*prefixfn)(struct parser *p);

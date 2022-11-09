@@ -175,57 +175,6 @@ static struct node *parse_grouped_expr(struct parser *p) {
 	return expr;
 }
 
-static struct node *parse_block(struct parser *p) {
-	struct node *block = new_block();
-	next(p);
-
-	while (!item_is(p->cur, item_rbrace) && !item_is(p->cur, item_eof)) {
-		struct node *statement = parse_statement(p);
-
-		if (statement != NULL) {
-			block_add_statement(block->data, statement);
-		}
-		next(p);
-	}
-
-	if (!item_is(p->cur, item_rbrace)) {
-		puts("expected \"}\" after block");
-		exit(1);
-	}
-
-	return block;
-}
-
-static struct node *parse_ifexpr(struct parser *p) {
-	next(p);
-	struct node *cond = parse_expr(p, lowest);
-
-	if (!expect_peek(p, item_lbrace)) {
-		puts("expecting \"{\" after if keyword");
-		exit(1);
-	}
-
-	struct node *body = parse_block(p);
-	struct node *alt = NULL;
-
-	if (item_is(p->peek, item_else)) {
-		next(p);
-
-		if (item_is(p->peek, item_if)) {
-			next(p);
-			alt = parse_ifexpr(p);
-		} else {
-			if (!expect_peek(p, item_lbrace)) {
-				puts("expecting \"{\" after else keyword");
-				exit(1);
-			}
-			alt = parse_block(p);
-		}
-	}
-
-	return new_ifelse(cond, body, alt);
-}
-
 static size_t parse_function_params(struct parser *p, char ***params) {
 	size_t len = 0;
 
@@ -261,18 +210,6 @@ static size_t parse_function_params(struct parser *p, char ***params) {
 	return len;
 }
 
-static struct node *parse_function(struct parser *p) {
-	if (!expect_peek(p, item_lparen)) {
-		puts("expected \"(\" after fn keyword");
-		exit(1);
-	}
-
-	char **params = NULL;
-	size_t nparams = parse_function_params(p, &params);
-
-	return new_function(params, nparams, parse_block(p));
-}
-
 static struct node *parse_return(struct parser *p) {
 	struct node *ret;
 
@@ -294,6 +231,69 @@ static struct node *parse_statement(struct parser *p) {
 		return parse_return(p);
 	}
 	return parse_expr(p, lowest);
+}
+
+static struct node *parse_block(struct parser *p) {
+	struct node *block = new_block();
+	next(p);
+
+	while (!item_is(p->cur, item_rbrace) && !item_is(p->cur, item_eof)) {
+		struct node *statement = parse_statement(p);
+
+		if (statement != NULL) {
+			block_add_statement(block->data, statement);
+		}
+		next(p);
+	}
+
+	if (!item_is(p->cur, item_rbrace)) {
+		puts("expected \"}\" after block");
+		exit(1);
+	}
+
+	return block;
+}
+
+static struct node *parse_function(struct parser *p) {
+	if (!expect_peek(p, item_lparen)) {
+		puts("expected \"(\" after fn keyword");
+		exit(1);
+	}
+
+	char **params = NULL;
+	size_t nparams = parse_function_params(p, &params);
+
+	return new_function(params, nparams, parse_block(p));
+}
+
+static struct node *parse_ifexpr(struct parser *p) {
+	next(p);
+	struct node *cond = parse_expr(p, lowest);
+
+	if (!expect_peek(p, item_lbrace)) {
+		puts("expecting \"{\" after if keyword");
+		exit(1);
+	}
+
+	struct node *body = parse_block(p);
+	struct node *alt = NULL;
+
+	if (item_is(p->peek, item_else)) {
+		next(p);
+
+		if (item_is(p->peek, item_if)) {
+			next(p);
+			alt = parse_ifexpr(p);
+		} else {
+			if (!expect_peek(p, item_lbrace)) {
+				puts("expecting \"{\" after else keyword");
+				exit(1);
+			}
+			alt = parse_block(p);
+		}
+	}
+
+	return new_ifelse(cond, body, alt);
 }
 
 static struct node *parse(struct parser *p) {
