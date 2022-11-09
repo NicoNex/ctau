@@ -175,7 +175,27 @@ static struct node *parse_grouped_expr(struct parser *p) {
 	return expr;
 }
 
-// TODO: implement parse_block.
+static struct node *parse_block(struct parser *p) {
+	struct node *block = new_block();
+	next(p);
+
+	while (!item_is(p->cur, item_rbrace) && !item_is(p->cur, item_eof)) {
+		struct node *statement = parse_statement(p);
+
+		if (statement != NULL) {
+			block_add_statement(block->data, statement);
+		}
+		next(p);
+	}
+
+	if (!item_is(p->cur, item_rbrace)) {
+		puts("expected \"}\" after block");
+		exit(1);
+	}
+
+	return block;
+}
+
 static struct node *parse_ifexpr(struct parser *p) {
 	next(p);
 	struct node *cond = parse_expr(p, lowest);
@@ -204,6 +224,53 @@ static struct node *parse_ifexpr(struct parser *p) {
 	}
 
 	return new_ifelse(cond, body, alt);
+}
+
+static size_t parse_function_params(struct parser *p, char ***params) {
+	size_t len = 0;
+
+	if (item_is(p->peek, item_rparen)) {
+		next(p);
+		return len;
+	}
+
+	next(p);
+	char *param = calloc(p->cur.lit.len+1, sizeof(char));
+	strncpy(param, p->cur.lit.val, p->cur.lit.len);
+
+	*params = realloc(*params, sizeof(char **));
+	*params[0] = param;
+	len += 1;
+
+	while (item_is(p->peek, item_comma)) {
+		next(p);
+		next(p);
+
+		param = calloc(p->cur.lit.len+1, sizeof(char));
+		strncpy(param, p->cur.lit.val, p->cur.lit.len);
+
+		*params = realloc(*params, sizeof(char **) * ++len);
+		*params[len-1] = param;
+	}
+
+	if (!expect_peek(p, item_rparen)) {
+		puts("expected \")\" after params definition");
+		exit(1);
+	}
+
+	return len;
+}
+
+static struct node *parse_function(struct parser *p) {
+	if (!expect_peek(p, item_lparen)) {
+		puts("expected \"(\" after fn keyword");
+		exit(1);
+	}
+
+	char **params = NULL;
+	size_t nparams = parse_function_params(p, &params);
+
+	return new_function(params, nparams, parse_block(p));
 }
 
 static struct node *parse_return(struct parser *p) {
