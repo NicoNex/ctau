@@ -164,6 +164,48 @@ static struct node *parse_integer(struct parser *p) {
 	return new_integer(val);
 }
 
+static struct node *parse_grouped_expr(struct parser *p) {
+	next(p);
+	struct node *expr = parse_expr(p, lowest);
+	if (!expect_peek(p, item_rparen)) {
+		puts("expecting \")\"");
+		exit(1);
+	}
+
+	return expr;
+}
+
+// TODO: implement parse_block.
+static struct node *parse_ifexpr(struct parser *p) {
+	next(p);
+	struct node *cond = parse_expr(p, lowest);
+
+	if (!expect_peek(p, item_lbrace)) {
+		puts("expecting \"{\" after if keyword");
+		exit(1);
+	}
+
+	struct node *body = parse_block(p);
+	struct node *alt = NULL;
+
+	if (item_is(p->peek, item_else)) {
+		next(p);
+
+		if (item_is(p->peek, item_if)) {
+			next(p);
+			alt = parse_ifexpr(p);
+		} else {
+			if (!expect_peek(p, item_lbrace)) {
+				puts("expecting \"{\" after else keyword");
+				exit(1);
+			}
+			alt = parse_block(p);
+		}
+	}
+
+	return new_ifelse(cond, body, alt);
+}
+
 static struct node *parse_return(struct parser *p) {
 	struct node *ret;
 
@@ -286,8 +328,8 @@ static inline prefixfn prefix_parser(enum item_type type) {
 	// 	return parse_string;
 	// case item_rawstring:
 	// 	return parse_rawstring;
-	case item_minus:
-		return parse_prefix_minus;
+	// case item_minus:
+	// 	return parse_prefix_minus;
 	// case item_bang:
 	// 	return parse_bang;
 	// case item_true:
@@ -297,7 +339,7 @@ static inline prefixfn prefix_parser(enum item_type type) {
 	case item_lparen:
 		return parse_grouped_expr;
 	case item_if:
-		return parse_if;
+		return parse_ifexpr;
 	case item_function:
 		return parse_function;
 	// case item_lbracket:

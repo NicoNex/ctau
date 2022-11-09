@@ -51,6 +51,7 @@ struct node *new_integer(int64_t *val);
 struct node *new_less(struct node *l, struct node *r);
 struct node *new_assign(struct node *l, struct node *r);
 struct node *new_call(struct node *fn, struct node **args, size_t arglen);
+struct node *new_ifelse(struct node *cond, struct node *body, struct node *altern);
 
 void block_add_statement(struct block *b, struct node *s);
 
