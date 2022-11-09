@@ -90,6 +90,12 @@ static node *parse_plus(struct parser *p, struct node *left) {
 	return new_plus(left, parse_expr(p, prec));
 }
 
+static node *parse_less(struct parser *p, struct node *left) {
+	enum precedence prec = cur_prec(p);
+	next(p);
+	return new_less(left, parse_expr(p, prec));
+}
+
 static node *parse_identifier(struct parser *p) {
 	char *name = calloc(p->cur.lit.len + 1, sizeof(char));
 	strncpy(name, p->cur.lit.val, p->cur.lit.len);
