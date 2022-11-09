@@ -1,10 +1,5 @@
 #include "ast.h"
 
-struct block {
-	struct node *nodes;
-	size_t len;
-};
-
 int compile_block(struct node *n, struct compiler *c) {
 	return -1;
 }

@@ -19,9 +19,9 @@ void dispose_less(struct node *n) {
 }
 
 struct node *new_less(struct node *l, struct node *r) {
-	struct less *l = malloc(sizeof(struct less));
-	l->l = l;
-	l->r = r;
+	struct less *less = malloc(sizeof(struct less));
+	less->l = l;
+	less->r = r;
 
-	return new_node(l, less_node, compile_less, dispose_less);
+	return new_node(less, less_node, compile_less, dispose_less);
 }

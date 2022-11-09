@@ -19,16 +19,22 @@ enum node_type {
 	null_node,
 	return_node,
 	identifier_node,
-	ifelse_node
+	ifelse_node,
+	assign_node
 };
 
 struct compiler {};
 
 struct node {
 	void *data;
-	enum type type;
+	enum node_type type;
 	int (*compile)(struct node *n, struct compiler *c);
 	void (*dispose)(struct node *n);
+};
+
+struct block {
+	struct node **nodes;
+	size_t len;
 };
 
 typedef int (*compilefn)(struct node *n, struct compiler *c);
@@ -41,7 +47,7 @@ struct node *new_block();
 struct node *new_null();
 struct node *new_return(struct node *val);
 struct node *new_identifier(char *name);
-struct node *new_integer(int *val);
+struct node *new_integer(int64_t *val);
 struct node *new_less(struct node *l, struct node *r);
 struct node *new_assign(struct node *l, struct node *r);
 struct node *new_call(struct node *fn, struct node **args, size_t arglen);

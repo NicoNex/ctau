@@ -1,6 +1,7 @@
 #include <string.h>
 #include <errno.h>
 #include "parser.h"
+#include "../lexer/lexer.h"
 
 enum precedence {
 	lowest,
@@ -16,7 +17,7 @@ enum precedence {
 	multiplicative,
 	prefix,
 	call,
-	index,
+	indexprec,
 	dot
 };
 
@@ -38,7 +39,10 @@ static inline int is_inside_loop(struct parser *p) {
 
 static inline void next(struct parser *p) {
 	p->cur = p->peek;
-	p->peek = p->index + 1 < p->nitems ? p->items[++p->index] : NULL;
+
+	if (p->index + 1 < p->nitems) {
+		p->peek = p->items[++p->index];
+	}
 }
 
 static inline int item_is(struct item i, enum item_type t) {
@@ -54,7 +58,7 @@ static inline enum precedence peek_prec(struct parser *p) {
 }
 
 static inline int expect_peek(struct parser *p, enum item_type t) {
-	return p->peek != NULL && item_is(p->peek, t);
+	return item_is(p->peek, t);
 }
 
 static struct node *parse_expr(struct parser *p, enum precedence prec) {
@@ -73,7 +77,7 @@ static struct node *parse_expr(struct parser *p, enum precedence prec) {
 			break;
 		}
 		next(p);
-		left = ifn(left);
+		left = ifn(p, left);
 	}
 
 	if (item_is(p->peek, item_semicolon)) {
@@ -118,7 +122,7 @@ static size_t parse_node_sequence(struct parser *p, struct node ***nodelist, enu
 		*nodelist[len-1] = parse_expr(p, lowest);
 		next(p);
 		next(p);
-	} while (p->peel != NULL && item_is(p->peek, sep));
+	} while (item_is(p->peek, sep));
 
 	if (!expect_peek(p, end)) {
 		puts("node sequence not terminated");
@@ -144,7 +148,8 @@ static struct node *parse_identifier(struct parser *p) {
 }
 
 static struct node *parse_integer(struct parser *p) {
-	char repr[p->cur.lit.len+1] = {0};
+	char repr[p->cur.lit.len+1];
+	memset(repr, '\0', p->cur.lit.len+1);
 	strncpy(repr, p->cur.lit.val, p->cur.lit.len);
 
 	int64_t *val = malloc(sizeof(int64_t));
@@ -185,7 +190,7 @@ static struct node *parse_statement(struct parser *p) {
 static struct node *parse(struct parser *p) {
 	struct node *block = new_block();
 
-	while (p->cur != NULL && !item_is(p->cur, item_eof)) {
+	while (!item_is(p->cur, item_eof)) {
 		struct node *statement = parse_statement(p);
 		if (statement != NULL) {
 			block_add_statement(block->data, statement);
@@ -199,13 +204,21 @@ static struct node *parse(struct parser *p) {
 struct parser new_parser(struct item *items, size_t nitems) {
 	struct parser p;
 
+	if (nitems > 0) p.cur = items[0];
+	if (nitems > 1) p.peek = items[1];
 	p.items = items;
 	p.nitems = nitems;
-	p.cur = nitems > 0 ? items[0] : NULL;
-	p.peek = nitems > 1 ? items[1] : NULL;
 	p.index = 1;
 	p.nested_loops = 0;
 	return p;
+}
+
+struct node *parse_input(char *input, size_t len) {
+	struct lexer l = new_lexer(input, len);
+	lexer_run(&l);
+
+	struct parser p = new_parser(l.items, l.nitems);
+	return parse(&p);
 }
 
 static inline enum precedence get_precedence(enum item_type type) {
@@ -255,7 +268,7 @@ static inline enum precedence get_precedence(enum item_type type) {
 	case item_lparen:
 		return call;
 	case item_lbracket:
-		return index;
+		return indexprec;
 	case item_dot:
 		return dot;
 	}
@@ -274,7 +287,7 @@ static inline prefixfn prefix_parser(enum item_type type) {
 	// case item_rawstring:
 	// 	return parse_rawstring;
 	case item_minus:
-		return parse_minus;
+		return parse_prefix_minus;
 	// case item_bang:
 	// 	return parse_bang;
 	// case item_true:
