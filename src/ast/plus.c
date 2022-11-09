@@ -10,7 +10,7 @@ int compile_plus(struct node *n, struct compiler *c) {
 }
 
 void dispose_plus(struct node *n) {
-	struct plus *p = (struct plus *) n->data;
+	struct plus *p = n->data;
 	if (p->l != NULL) p->l->dispose(p->l);
 	if (p->r != NULL) p->r->dispose(p->r);
 
@@ -19,9 +19,9 @@ void dispose_plus(struct node *n) {
 }
 
 struct node *new_plus(struct node *l, struct node *r) {
-	struct plus *p = calloc(1, sizeof(struct plus));
+	struct plus *p = malloc(sizeof(struct plus));
 	p->l = l;
 	p->r = r;
 
-	return new_node(p, PlusNode, compile_plus, dispose_plus);
+	return new_node(p, plus_node, compile_plus, dispose_plus);
 }

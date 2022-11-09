@@ -69,8 +69,9 @@ static inline void accept_until(struct lexer *l, char end) {
 static inline void emit(struct lexer *l, enum item_type type) {
 	struct string s = slice_str(&l->input[l->start], l->pos - l->start);
 
-	l->items = reallocarray(l->items, ++l->nitems, sizeof(struct item));
+	l->items = realloc(l->items, sizeof(struct item) * ++l->nitems);
 	l->items[l->nitems-1] = new_item(s, type, l->pos);
+	l->start = l->pos;
 }
 
 static inline struct string current_str(struct lexer *l) {
@@ -167,6 +168,56 @@ static void lex_number(struct lexer *l) {
 	l->state = lex_expression;
 }
 
+static void lex_less_than(struct lexer *l) {
+	switch (next(l)) {
+	case '=':
+		emit(l, item_lteq);
+		break;
+
+	case '<': {
+		if (next(l) == '=') {
+			emit(l, item_lshift_assign);
+			break;
+		}
+		backup(l);
+		emit(l, item_lshift);
+		break;
+	}
+
+	default:
+		backup(l);
+		emit(l, item_lt);
+		break;
+	}
+
+	l->state = lex_expression;
+}
+
+static void lex_greater_than(struct lexer *l) {
+	switch (next(l)) {
+	case '=':
+		emit(l, item_gteq);
+		break;
+
+	case '>': {
+		if (next(l) == '=') {
+			emit(l, item_rshift_assign);
+			break;
+		}
+		backup(l);
+		emit(l, item_rshift);
+		break;
+	}
+
+	default:
+		backup(l);
+		emit(l, item_gt);
+		break;
+	}
+
+	l->state = lex_expression;
+}
+
 static void lex_expression(struct lexer *l) {
 	int c = next(l);
 
@@ -180,6 +231,7 @@ static void lex_expression(struct lexer *l) {
 
 	switch (c) {
 	case '\n':
+	case ';':
 		emit(l, item_semicolon);
 		ignore_spaces(l);
 		return;
@@ -224,6 +276,12 @@ static void lex_expression(struct lexer *l) {
 		}
 		return;
 	}
+
+	case '<':
+		SETSTATE(lex_less_than);
+
+	case '>':
+		SETSTATE(lex_greater_than);
 
 	case eof:
 		emit(l, item_eof);

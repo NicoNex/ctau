@@ -10,7 +10,7 @@ int compile_minus(struct node *n, struct compiler *c) {
 }
 
 void dispose_minus(struct node *n) {
-	struct minus *m = (struct minus *) n->data;
+	struct minus *m = n->data;
 	if (m->l != NULL) m->l->dispose(m->l);
 	if (m->r != NULL) m->r->dispose(m->r);
 
@@ -19,9 +19,9 @@ void dispose_minus(struct node *n) {
 }
 
 struct node *new_minus(struct node *l, struct node *r) {
-	struct minus *m = calloc(1, sizeof(struct minus));
+	struct minus *m = malloc(sizeof(struct minus));
 	m->l = l;
 	m->r = r;
 
-	return new_node(m, MinusNode, compile_minus, dispose_minus);
+	return new_node(m, minus_node, compile_minus, dispose_minus);
 }
