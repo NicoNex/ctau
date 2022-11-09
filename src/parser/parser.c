@@ -53,6 +53,10 @@ static inline enum precedence peek_prec(struct parser *p) {
 	return get_precedence(p->peek.type);
 }
 
+static inline int expect_peek(struct parser *p, enum item_type t) {
+	return p->peek != NULL && item_is(p->peek, t);
+}
+
 static struct node *parse_expr(struct parser *p, enum precedence prec) {
 	prefixfn pfn = prefix_parser(p->cur.type);
 
@@ -101,13 +105,35 @@ static struct node *parse_assign(struct parser *p, struct node *left) {
 	return new_assign(left, parse_expr(p, lowest));
 }
 
-// TODO: implement parse_node_sequence.
-static struct node *parse_node_list(struct parser *p, enum item_type end) {
-	return parse_node_sequence(p, item_comma, end);
+static size_t parse_node_sequence(struct parser *p, struct node ***nodelist, enum item_type sep, enum item_type end) {
+	size_t len = 0;
+	next(p);
+
+	if (item_is(p->cur, end)) {
+		return len;
+	}
+
+	do {
+		*nodelist = realloc(*nodelist, sizeof(struct node *) * ++len);
+		*nodelist[len-1] = parse_expr(p, lowest);
+		next(p);
+		next(p);
+	} while (p->peel != NULL && item_is(p->peek, sep));
+
+	if (!expect_peek(p, end)) {
+		puts("node sequence not terminated");
+		exit(1);
+	}
+
+	return len;
 }
 
 static struct node *parse_call(struct parser *p, struct node *fn) {
-	return new_call(fn, parse_node_list(p, item_rparen));
+	struct node **nodelist = NULL;
+	size_t len = parse_node_sequence(p, &nodelist, item_comma, item_rparen);
+
+
+	return new_call(fn, nodelist, len);
 }
 
 static struct node *parse_identifier(struct parser *p) {
