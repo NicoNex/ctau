@@ -78,32 +78,46 @@ static struct node *parse_expr(struct parser *p, enum precedence prec) {
 	return left;
 }
 
-static node *parse_minus(struct parser *p, struct node *left) {
+static struct node *parse_minus(struct parser *p, struct node *left) {
 	enum precedence prec = cur_prec(p);
 	next(p);
 	return new_minus(left, parse_expr(p, prec));
 }
 
-static node *parse_plus(struct parser *p, struct node *left) {
+static struct node *parse_plus(struct parser *p, struct node *left) {
 	enum precedence prec = cur_prec(p);
 	next(p);
 	return new_plus(left, parse_expr(p, prec));
 }
 
-static node *parse_less(struct parser *p, struct node *left) {
+static struct node *parse_less(struct parser *p, struct node *left) {
 	enum precedence prec = cur_prec(p);
 	next(p);
 	return new_less(left, parse_expr(p, prec));
 }
 
-static node *parse_identifier(struct parser *p) {
+static struct node *parse_assign(struct parser *p, struct node *left) {
+	next(p);
+	return new_assign(left, parse_expr(p, lowest));
+}
+
+// TODO: implement parse_node_sequence.
+static struct node *parse_node_list(struct parser *p, enum item_type end) {
+	return parse_node_sequence(p, item_comma, end);
+}
+
+static struct node *parse_call(struct parser *p, struct node *fn) {
+	return new_call(fn, parse_node_list(p, item_rparen));
+}
+
+static struct node *parse_identifier(struct parser *p) {
 	char *name = calloc(p->cur.lit.len + 1, sizeof(char));
 	strncpy(name, p->cur.lit.val, p->cur.lit.len);
 
 	return new_identifier(name);
 }
 
-static node *parse_integer(struct parser *p) {
+static struct node *parse_integer(struct parser *p) {
 	char repr[p->cur.lit.len+1] = {0};
 	strncpy(repr, p->cur.lit.val, p->cur.lit.len);
 

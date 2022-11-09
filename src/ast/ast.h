@@ -43,6 +43,7 @@ struct node *new_return(struct node *val);
 struct node *new_identifier(char *name);
 struct node *new_integer(int *val);
 struct node *new_less(struct node *l, struct node *r);
+struct node *new_assign(struct node *l, struct node *r);
 
 void block_add_statement(struct block *b, struct node *s);
 
