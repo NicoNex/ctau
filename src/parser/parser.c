@@ -58,7 +58,11 @@ static inline enum precedence peek_prec(struct parser *p) {
 }
 
 static inline int expect_peek(struct parser *p, enum item_type t) {
-	return item_is(p->peek, t);
+	if (item_is(p->peek, t)) {
+		next(p);
+		return 1;
+	}
+	return 0;
 }
 
 static struct node *parse_expr(struct parser *p, enum precedence prec) {
@@ -117,12 +121,15 @@ static size_t parse_node_sequence(struct parser *p, struct node ***nodelist, enu
 		return len;
 	}
 
-	do {
+	*nodelist = realloc(*nodelist, sizeof(struct node *) * ++len);
+	*nodelist[len-1] = parse_expr(p, lowest);
+
+	while (item_is(p->peek, sep)) {
+		next(p);
+		next(p);
 		*nodelist = realloc(*nodelist, sizeof(struct node *) * ++len);
 		*nodelist[len-1] = parse_expr(p, lowest);
-		next(p);
-		next(p);
-	} while (item_is(p->peek, sep));
+	}
 
 	if (!expect_peek(p, end)) {
 		puts("node sequence not terminated");
@@ -136,7 +143,6 @@ static struct node *parse_call(struct parser *p, struct node *fn) {
 	struct node **nodelist = NULL;
 	size_t len = parse_node_sequence(p, &nodelist, item_comma, item_rparen);
 
-
 	return new_call(fn, nodelist, len);
 }
 
@@ -149,7 +155,7 @@ static struct node *parse_identifier(struct parser *p) {
 
 static struct node *parse_integer(struct parser *p) {
 	char repr[p->cur.lit.len+1];
-	memset(repr, '\0', p->cur.lit.len+1);
+	repr[p->cur.lit.len] = '\0';
 	strncpy(repr, p->cur.lit.val, p->cur.lit.len);
 
 	int64_t *val = malloc(sizeof(int64_t));
@@ -173,41 +179,6 @@ static struct node *parse_grouped_expr(struct parser *p) {
 	}
 
 	return expr;
-}
-
-static size_t parse_function_params(struct parser *p, char ***params) {
-	size_t len = 0;
-
-	if (item_is(p->peek, item_rparen)) {
-		next(p);
-		return len;
-	}
-
-	next(p);
-	char *param = calloc(p->cur.lit.len+1, sizeof(char));
-	strncpy(param, p->cur.lit.val, p->cur.lit.len);
-
-	*params = realloc(*params, sizeof(char **));
-	*params[0] = param;
-	len += 1;
-
-	while (item_is(p->peek, item_comma)) {
-		next(p);
-		next(p);
-
-		param = calloc(p->cur.lit.len+1, sizeof(char));
-		strncpy(param, p->cur.lit.val, p->cur.lit.len);
-
-		*params = realloc(*params, sizeof(char **) * ++len);
-		*params[len-1] = param;
-	}
-
-	if (!expect_peek(p, item_rparen)) {
-		puts("expected \")\" after params definition");
-		exit(1);
-	}
-
-	return len;
 }
 
 static struct node *parse_return(struct parser *p) {
@@ -254,6 +225,41 @@ static struct node *parse_block(struct parser *p) {
 	return block;
 }
 
+static size_t parse_function_params(struct parser *p, char ***params) {
+	size_t len = 0;
+
+	if (expect_peek(p, item_rparen)) {
+		next(p);
+		return len;
+	}
+
+	next(p);
+	char *param = calloc(p->cur.lit.len+1, sizeof(char));
+	strncpy(param, p->cur.lit.val, p->cur.lit.len);
+
+	*params = realloc(*params, sizeof(char **));
+	*params[0] = param;
+	len += 1;
+
+	while (item_is(p->peek, item_comma)) {
+		next(p);
+		next(p);
+
+		param = calloc(p->cur.lit.len+1, sizeof(char));
+		strncpy(param, p->cur.lit.val, p->cur.lit.len);
+
+		*params = realloc(*params, sizeof(char **) * ++len);
+		*params[len-1] = param;
+	}
+
+	if (!expect_peek(p, item_rparen)) {
+		puts("expected \")\" after params definition");
+		exit(1);
+	}
+
+	return len;
+}
+
 static struct node *parse_function(struct parser *p) {
 	if (!expect_peek(p, item_lparen)) {
 		puts("expected \"(\" after fn keyword");
@@ -262,6 +268,11 @@ static struct node *parse_function(struct parser *p) {
 
 	char **params = NULL;
 	size_t nparams = parse_function_params(p, &params);
+
+	if (!expect_peek(p, item_lbrace)) {
+		puts("expected \"{\" after function arguments");
+		exit(1);
+	}
 
 	return new_function(params, nparams, parse_block(p));
 }
@@ -272,6 +283,9 @@ static struct node *parse_ifexpr(struct parser *p) {
 
 	if (!expect_peek(p, item_lbrace)) {
 		puts("expecting \"{\" after if keyword");
+		printf("index: %d\n", p->index);
+		print_item(p->cur);
+		print_item(p->peek);
 		exit(1);
 	}
 
@@ -325,6 +339,10 @@ struct parser new_parser(struct item *items, size_t nitems) {
 struct node *parse_input(char *input, size_t len) {
 	struct lexer l = new_lexer(input, len);
 	lexer_run(&l);
+
+	for (int i = 0; i < l.nitems; i++) {
+		print_item(l.items[i]);
+	}
 
 	struct parser p = new_parser(l.items, l.nitems);
 	return parse(&p);

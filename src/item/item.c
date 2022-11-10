@@ -3,32 +3,35 @@
 #include <stdlib.h>
 #include "item.h"
 
-#define MIN(a, b) a < b ? a : b
+static inline int matches(struct string s, const char *t) {
+	size_t tlen = strlen(t);
+	return s.len == tlen && strncmp(s.val, t, tlen) == 0;
+}
 
 enum item_type lookup_type(struct string s) {
-	if (strncmp(s.val, "fn", MIN(s.len, 2)) == 0) {
+	if (matches(s, "fn")) {
 		return item_function;
-	} else if (strncmp(s.val, "for", MIN(s.len, 3)) == 0) {
+	} else if (matches(s, "for")) {
 		return item_for;
-	} else if (strncmp(s.val, "continue", MIN(s.len, 8)) == 0) {
+	} else if (matches(s, "continue")) {
 		return item_continue;
-	} else if (strncmp(s.val, "break", MIN(s.len, 5)) == 0) {
+	} else if (matches(s, "break")) {
 		return item_break;
-	} else if (strncmp(s.val, "if", MIN(s.len, 2)) == 0) {
+	} else if (matches(s, "if")) {
 		return item_if;
-	} else if (strncmp(s.val, "else", MIN(s.len, 4)) == 0) {
+	} else if (matches(s, "else")) {
 		return item_else;
-	} else if (strncmp(s.val, "true", MIN(s.len, 4)) == 0) {
+	} else if (matches(s, "true")) {
 		return item_true;
-	} else if (strncmp(s.val, "false", MIN(s.len, 5)) == 0) {
+	} else if (matches(s, "false")) {
 		return item_false;
-	} else if (strncmp(s.val, "return", MIN(s.len, 6)) == 0) {
+	} else if (matches(s, "return")) {
 		return item_return;
-	} else if (strncmp(s.val, "null", MIN(s.len, 4)) == 0) {
+	} else if (matches(s, "null")) {
 		return item_null;
-	} else if (strncmp(s.val, "import", MIN(s.len, 6)) == 0) {
+	} else if (matches(s, "import")) {
 		return item_import;
-	} else if (strncmp(s.val, "tau", MIN(s.len, 3)) == 0) {
+	} else if (matches(s, "tau")) {
 		return item_tau;
 	} else {
 		return item_ident;
@@ -52,9 +55,10 @@ struct string slice_str(char *s, size_t len) {
 	return str;
 }
 
-void print_item(struct item *i) {
-	for (int j = 0; j < i->lit.len; j++) {
-		putchar(i->lit.val[j]);
-	}
-	putchar('\n');
+void print_item(struct item i) {
+	char lit[i.lit.len+1];
+
+	lit[i.lit.len] = '\0';
+	strncpy(lit, i.lit.val, i.lit.len);
+	printf("item: %s, type %d\n", lit, i.type);
 }

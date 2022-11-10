@@ -88,6 +88,6 @@ struct item {
 struct item new_item(struct string lit, enum item_type type, int pos);
 enum item_type lookup_type(struct string s);
 struct string slice_str(char *s, size_t len);
-void print_item(struct item *i);
+void print_item(struct item i);
 
 #endif
