@@ -340,12 +340,11 @@ struct node *parse_input(char *input, size_t len) {
 	struct lexer l = new_lexer(input, len);
 	lexer_run(&l);
 
-	for (int i = 0; i < l.nitems; i++) {
-		print_item(l.items[i]);
-	}
-
 	struct parser p = new_parser(l.items, l.nitems);
-	return parse(&p);
+	struct node *tree = parse(&p);
+	free(l.items);
+
+	return tree;
 }
 
 static inline enum precedence get_precedence(enum item_type type) {
