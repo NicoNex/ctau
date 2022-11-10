@@ -33,13 +33,13 @@ struct node {
 	void (*dispose)(struct node *n);
 };
 
+typedef int (*compilefn)(struct node *n, struct compiler *c);
+typedef void (*disposefn)(struct node *n);
+
 struct block {
 	struct node **nodes;
 	size_t len;
 };
-
-typedef int (*compilefn)(struct node *n, struct compiler *c);
-typedef void (*disposefn)(struct node *n);
 
 struct node *new_node(void *data, enum node_type t, compilefn cfn, disposefn dfn);
 struct node *new_plus(struct node *l, struct node *r);
