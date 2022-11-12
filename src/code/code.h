@@ -121,6 +121,7 @@ struct definition definitions[op_pop+1] = {
 
 int lookup_def(enum opcode op, struct definition *def);
 int make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...);
+int read_operands(struct definition def, uint8_t *ins, int **operands);
 
 uint8_t read_uint8(uint8_t *ins);
 uint16_t read_uint16(uint8_t *ins);
