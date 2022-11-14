@@ -32,6 +32,46 @@ static void *_strmap_get(strmap m, uint64_t hash) {
 	}
 }
 
+static void _strmap_add_node(strmap *m, struct node *n) {
+	if (*m == NULL) {
+		*m = n;
+	} else {
+		_strmap_add_node(n->hash < (*m)->hash ? &(*m)->l : &(*m)-> r, n);
+	}
+}
+
+static void _strmap_del(strmap *root, strmap *node, uint64_t hash) {
+	struct node *n = *node;
+
+	if (n != NULL) {
+		if (hash == n->hash) {
+			*node = NULL;
+			free(n->key);
+			free(n->val);
+			if (n->l != NULL) _strmap_add_node(root, n->l);
+			if (n->r != NULL) _strmap_add_node(root, n->r);
+			free(n);
+		} else {
+			_strmap_del(root, hash < n->hash ? &n->l : &n->r, hash);
+		}
+	}
+}
+
+static void _strmap_del_stack(strmap *root, strmap *node, uint64_t hash) {
+	struct node *n = *node;
+
+	if (n != NULL) {
+		if (hash == n->hash) {
+			*node = NULL;
+			if (n->l != NULL) _strmap_add_node(root, n->l);
+			if (n->r != NULL) _strmap_add_node(root, n->r);
+			free(n);
+		} else {
+			_strmap_del_stack(root, hash < n->hash ? &n->l : &n->r, hash);
+		}
+	}
+}
+
 // Taken from: https://github.com/haipome/fnv/blob/master/fnv.c
 static inline uint64_t fnv64(char *key) {
 	uint64_t hash = 0;
@@ -53,6 +93,14 @@ void strmap_set(strmap *m, char *key, void *val) {
 
 void *strmap_get(strmap m, char *key) {
 	return _strmap_get(m, fnv64(key));
+}
+
+void strmap_del(strmap *m, char *key) {
+	_strmap_del(m, m, fnv64(key));
+}
+
+void strmap_del_stack(strmap *m, char *key) {
+	_strmap_del_stack(m, m, fnv64(key));
 }
 
 void strmap_free(strmap m) {

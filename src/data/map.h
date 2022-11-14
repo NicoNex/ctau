@@ -13,6 +13,8 @@ typedef struct node {
 
 void strmap_set(strmap *m, char *key, void *val);
 void *strmap_get(strmap m, char *key);
+void strmap_del(strmap *m, char *key);
+void strmap_del_stack(strmap *m, char *key);
 void strmap_free(strmap m);
 
 #endif
