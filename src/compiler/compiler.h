@@ -6,6 +6,7 @@
 #include "../ast/ast.h"
 #include "../obj/obj.h"
 #include "../code/code.h"
+#include "../data/map.h"
 
 enum symbol_scope {
 	global_scope,
@@ -15,10 +16,18 @@ enum symbol_scope {
 	function_scope
 };
 
-// TODO: complete this.
+struct symbol {
+	char *name;
+	enum symbol_scope scope;
+	int index;
+};
+
 struct symbol_table {
 	struct symbol_table *outer;
-
+	strmap sym_store;
+	struct symbol *free_symbols;
+	size_t nfree;
+	int num_defs;
 };
 
 struct emitted_inst {
@@ -44,8 +53,8 @@ struct compiler {
 
 struct bytecode {
 	uint8_t *instructions;
-	size_t ninstructions;
 	struct obj *constants;
+	size_t ninstructions;
 	size_t nconstants;
 };
 
