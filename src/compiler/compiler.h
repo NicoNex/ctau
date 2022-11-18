@@ -24,8 +24,8 @@ struct symbol {
 
 struct symbol_table {
 	struct symbol_table *outer;
-	strmap sym_store;
-	struct symbol *free_symbols;
+	strmap store;
+	struct symbol **free_symbols;
 	size_t nfree;
 	int num_defs;
 };
@@ -57,5 +57,13 @@ struct bytecode {
 	size_t ninstructions;
 	size_t nconstants;
 };
+
+struct symbol_table *new_symbol_table();
+struct symbol_table *new_enclosed_symbol_table(struct symbol_table *outer);
+struct symbol *symbol_table_define(struct symbol_table *s, char *name);
+struct symbol *symbol_table_define_free(struct symbol_table *s, struct symbol *original);
+struct symbol *symbol_table_resolve(struct symbol_table *s, char *name);
+struct symbol *define_builtin(struct symbol_table *s, int index, char *name);
+void symbol_table_free(struct symbol_table *s);
 
 #endif

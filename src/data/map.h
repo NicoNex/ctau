@@ -16,5 +16,6 @@ void *strmap_get(strmap m, char *key);
 void strmap_del(strmap *m, char *key);
 void strmap_del_stack(strmap *m, char *key);
 void strmap_free(strmap m);
+void strmap_free_all(strmap m);
 
 #endif
