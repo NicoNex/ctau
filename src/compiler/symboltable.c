@@ -16,13 +16,14 @@ void symbol_free(struct symbol *s) {
 }
 
 struct symbol *symbol_table_define(struct symbol_table *s, char *name) {
-    struct symbol *symbol = NULL;
+    struct symbol *symbol = strmap_get(s->store, name);
 
-    if ((symbol = strmap_get(s->store, name)) != NULL) {
+    if (symbol!= NULL) {
         return symbol;
     }
 
-    symbol = new_symbol(name, s->num_defs, s->outer != NULL ? global_scope : local_scope);
+    enum symbol_scope scope = s->outer != NULL ? local_scope : global_scope;
+    symbol = new_symbol(name, s->num_defs, scope);
     strmap_set(&s->store, name, symbol);
     s->num_defs++;
     return symbol;
@@ -37,14 +38,16 @@ struct symbol *symbol_table_define_free(struct symbol_table *s, struct symbol *o
 }
 
 struct symbol *symbol_table_resolve(struct symbol_table *s, char *name) {
-    struct symbol *symbol = NULL;
+    struct symbol *symbol = strmap_get(s->store, name);
 
-    if ((symbol = strmap_get(s->store, name)) != NULL) {
+    if (symbol != NULL) {
         return symbol;
     }
 
     if (s->outer != NULL) {
-        if ((symbol = symbol_table_resolve(s->outer, name)) != NULL) {
+        symbol = symbol_table_resolve(s->outer, name);
+
+        if (symbol != NULL) {
             if (symbol->scope == global_scope || symbol->scope == builtin_scope) {
                 return symbol;
             }
@@ -74,9 +77,14 @@ struct symbol_table *new_enclosed_symbol_table(struct symbol_table *outer) {
     return s;
 }
 
+static void _strmap_symbol_free(char *key, void *val) {
+    free(key);
+    free(val);
+}
+
 void symbol_table_free(struct symbol_table *s) {
     if (s->outer != NULL) free_symbol_table(s->outer);
-    strmap_free(s->store);
+    strmap_free_fn(s->store, _strmap_symbol_free);
 
     for (int i = 0; i < s->nfree; i++) {
         symbol_free(s->free_symbols[i]);

@@ -24,8 +24,6 @@ enum node_type {
 	assign_node
 };
 
-struct compiler {};
-
 struct node {
 	void *data;
 	enum node_type type;

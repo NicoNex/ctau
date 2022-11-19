@@ -42,7 +42,7 @@ static void _strmap_add_node(struct node **m, struct node *n) {
 	}
 }
 
-static void _strmap_del(struct node **root, struct node **node, uint64_t hash) {
+static void _strmap_del_all(struct node **root, struct node **node, uint64_t hash) {
 	struct node *n = *node;
 
 	if (n != NULL) {
@@ -54,12 +54,12 @@ static void _strmap_del(struct node **root, struct node **node, uint64_t hash) {
 			if (n->r != NULL) _strmap_add_node(root, n->r);
 			free(n);
 		} else {
-			_strmap_del(root, hash < n->hash ? &n->l : &n->r, hash);
+			_strmap_del_all(root, hash < n->hash ? &n->l : &n->r, hash);
 		}
 	}
 }
 
-static void _strmap_del_stack(struct node **root, struct node **node, uint64_t hash) {
+static void _strmap_del(struct node **root, struct node **node, uint64_t hash) {
 	struct node *n = *node;
 
 	if (n != NULL) {
@@ -69,7 +69,7 @@ static void _strmap_del_stack(struct node **root, struct node **node, uint64_t h
 			if (n->r != NULL) _strmap_add_node(root, n->r);
 			free(n);
 		} else {
-			_strmap_del_stack(root, hash < n->hash ? &n->l : &n->r, hash);
+			_strmap_del(root, hash < n->hash ? &n->l : &n->r, hash);
 		}
 	}
 }
@@ -101,8 +101,8 @@ void strmap_del(strmap *m, char *key) {
 	_strmap_del(m, m, fnv64a(key));
 }
 
-void strmap_del_stack(strmap *m, char *key) {
-	_strmap_del_stack(m, m, fnv64a(key));
+void strmap_del_all(strmap *m, char *key) {
+	_strmap_del_all(m, m, fnv64a(key));
 }
 
 void strmap_free_all(strmap m) {
@@ -119,6 +119,15 @@ void strmap_free(strmap m) {
 	if (m != NULL) {
 		if (m->l != NULL) strmap_free(m->l);
 		if (m->r != NULL) strmap_free(m->r);
+		free(m);
+	}
+}
+
+void strmap_free_fn(strmap m, strmap_free_fn freefn) {
+	if (m != NULL) {
+		freefn(m->key, m->val);
+		if (m->l != NULL) strmap_free_fn(m->l, freefn);
+		if (m->r != NULL) strmap_free_fn(m->r, freefn);
 		free(m);
 	}
 }
