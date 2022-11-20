@@ -11,8 +11,6 @@ static inline struct node *new_node(uint64_t hash, char *key, void *val) {
 }
 
 static void _strmap_set(struct node **m, uint64_t hash, char *key, void *val) {
-	
-
 	if (*m == NULL) {
 		*m = new_node(hash, key, val);
 	} else if (hash == (*m)->hash) {
@@ -123,7 +121,7 @@ void strmap_free(strmap m) {
 	}
 }
 
-void strmap_free_fn(strmap m, strmap_free_fn freefn) {
+void strmap_free_fn(strmap m, free_fn freefn) {
 	if (m != NULL) {
 		freefn(m->key, m->val);
 		if (m->l != NULL) strmap_free_fn(m->l, freefn);

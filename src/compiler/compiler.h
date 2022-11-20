@@ -1,11 +1,15 @@
 #ifndef COMPILER_H_
 #define COMPILER_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "../obj/obj.h"
 #include "../code/code.h"
 #include "../data/map.h"
+
+#define CONTINUE_PLACEHOLDER 9998
+#define BREAK_PLACEHOLDER 9997
 
 enum symbol_scope {
 	global_scope,

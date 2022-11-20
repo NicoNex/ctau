@@ -1,6 +1,9 @@
 #ifndef CODE_H_
 #define CODE_H_
 
+#include <stdint.h>
+#include <stddef.h>
+
 enum opcode {
     op_constant,
 	op_true,
@@ -58,7 +61,7 @@ enum opcode {
 };
 
 struct definition {
-    char *name;
+	char *name;
 	int *opwidths;
 	int noperands;
 };
@@ -120,11 +123,11 @@ struct definition definitions[op_pop+1] = {
 };
 
 int lookup_def(enum opcode op, struct definition *def);
-int make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...);
+size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...);
 int read_operands(struct definition def, uint8_t *ins, int **operands);
 
 uint8_t read_uint8(uint8_t *ins);
 uint16_t read_uint16(uint8_t *ins);
-uint32_t read_uint32(uint32_t *ins);
+uint32_t read_uint32(uint8_t *ins);
 
 #endif

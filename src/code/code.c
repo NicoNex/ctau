@@ -1,9 +1,10 @@
+#include <stdlib.h>
 #include <stdarg.h>
 #include "code.h"
 
 #define NUM_OPCODES 45
 
-inline int lookup_def(uint8_t opcode, struct definition *def) {
+int lookup_def(enum opcode opcode, struct definition *def) {
 	if (opcode >= NUM_OPCODES) {
 		return 0;
 	}
@@ -34,7 +35,7 @@ size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...) {
 
 	int ins_len = 1;
 
-	for (int i = 0; i < def.len; i++) {
+	for (int i = 0; i < def.noperands; i++) {
 		ins_len += def.opwidths[i];
 	}
 
@@ -43,26 +44,29 @@ size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...) {
 	int offset = code_len;
 
 	va_list operands;
-	va_start(operands, def.noperands);
+	va_start(operands, op);
 
 	for (int i = 0; i < def.noperands; i++) {
 		int width = def.opwidths[i];
 
 		switch (width) {
-		case 1:
-			uint8_t operand = va_arg(operands, uint8_t);
-			*code[offset] = operand;
-			break;
+			case 1: {
+				uint8_t operand = va_arg(operands, uint32_t);
+				*code[offset] = operand;
+				break;
+			}
 
-		case 2:
-			uint16_t operand = va_arg(operands, uint16_t);
-			put_uint16(&(*code[offset]), operand);
-			break;
+			case 2: {
+				uint16_t operand = va_arg(operands, uint32_t);
+				put_uint16(&(*code[offset]), operand);
+				break;
+			}
 
-		case 4:
-			uint32_t operand = va_arg(operands, uint32_t);
-			put_uint32(&(*code[offset]), operand);
-			break;
+			case 4: {
+				uint32_t operand = va_arg(operands, uint32_t);
+				put_uint32(&(*code[offset]), operand);
+				break;
+			}
 		}
 
 		offset += width;
@@ -80,7 +84,7 @@ uint16_t read_uint16(uint8_t *ins) {
 	return (ins[0] << 8) | ins[1];
 }
 
-uint32_t read_uint32(uint32_t *ins) {
+uint32_t read_uint32(uint8_t *ins) {
 	return (ins[0] << 24) | (ins[1] << 16) | (ins[2] << 8) | ins[3];
 }
 
@@ -90,7 +94,7 @@ int read_operands(struct definition def, uint8_t *ins, int **operands) {
 	int offset = 0;
 
 	for (int i = 0; i < def.noperands; i++) {
-		int width = def.operands[i];
+		int width = def.opwidths[i];
 
 		switch (width) {
 		case 1:
