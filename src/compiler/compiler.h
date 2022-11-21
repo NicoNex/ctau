@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "../ast/ast.h"
 #include "../obj/obj.h"
 #include "../code/code.h"
 #include "../data/map.h"

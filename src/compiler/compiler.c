@@ -135,6 +135,39 @@ int compiler_replace_break_operand(struct compiler *c, int start, int end, int o
 	return 1;
 }
 
+void compiler_replace_last_pop_with_return(struct compiler *c) {
+	int pos = c->scopes[c->scope_index].last_inst.position;
+	uint8_t *new = NULL;
+	size_t len = make_bcode(&new, 0, op_return_value);
+	compiler_replace_inst(c, pos, new, len);
+	free(new);
+	c->scopes[c->scope_index].last_inst.opcode = op_return_value;
+}
+
+void compiler_enter_scope(struct compiler *c) {
+	c->scopes = realloc(c->scopes, sizeof(struct scope) * ++c->nscopes);
+	c->scopes[c->nscopes-1] = (struct scope ) {0};
+	c->st = new_enclosed_symbol_table(c->st);
+}
+
+uint8_t *compiler_leave_scope(struct compiler *c) {
+	uint8_t *insts = c->scopes[c->scope_index].insts;
+	c->scopes = realloc(c->scopes, sizeof(struct scope) * --c->nscopes);
+	struct symbol_table *oldst = c->st;
+	c->st = c->st->outer;
+	symbol_table_free(oldst);
+
+	return insts;
+}
+
+int compiler_pos(struct compiler *c) {
+	return c->scopes[c->scope_index].ninsts;
+}
+
+int compile(struct compiler *c, struct node *tree) {
+	return tree->compile(tree, c);
+}
+
 struct compiler *new_compiler_with_state(struct symbol_table *st, struct obj **consts) {
 	struct compiler *c = calloc(1, sizeof(struct compiler));
 	c->st = st;
