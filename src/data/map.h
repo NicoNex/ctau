@@ -3,12 +3,12 @@
 
 #include <stdint.h>
 
-typedef struct node {
+typedef struct strnode {
 	uint64_t hash;
 	char *key;
 	void *val;
-	struct node *l;
-	struct node *r;
+	struct strnode *l;
+	struct strnode *r;
 } *strmap;
 
 typedef void (*free_fn)(char *key, void *val);

@@ -1,8 +1,16 @@
 #include <stdlib.h>
 #include "map.h"
 
-static inline struct node *new_node(uint64_t hash, char *key, void *val) {
-	struct node *n = calloc(1, sizeof(struct node));
+struct strnode {
+	uint64_t hash;
+	char *key;
+	void *val;
+	struct strnode *l;
+	struct strnode *r;
+};
+
+static inline struct strnode *new_strnode(uint64_t hash, char *key, void *val) {
+	struct strnode *n = calloc(1, sizeof(struct strnode));
 	n->hash = hash;
 	n->key = key;
 	n->val = val;
@@ -10,9 +18,9 @@ static inline struct node *new_node(uint64_t hash, char *key, void *val) {
 	return n;
 }
 
-static void _strmap_set(struct node **m, uint64_t hash, char *key, void *val) {
+static void _strmap_set(struct strnode **m, uint64_t hash, char *key, void *val) {
 	if (*m == NULL) {
-		*m = new_node(hash, key, val);
+		*m = new_strnode(hash, key, val);
 	} else if (hash == (*m)->hash) {
 		(*m)->val = val;
 	} else if (hash < (*m)->hash) {
@@ -22,7 +30,7 @@ static void _strmap_set(struct node **m, uint64_t hash, char *key, void *val) {
 	}
 }
 
-static void *_strmap_get(struct node *m, uint64_t hash) {
+static void *_strmap_get(struct strnode *m, uint64_t hash) {
 	if (m == NULL) {
 		return NULL;
 	} else if (m->hash == hash) {
@@ -32,24 +40,24 @@ static void *_strmap_get(struct node *m, uint64_t hash) {
 	}
 }
 
-static void _strmap_add_node(struct node **m, struct node *n) {
+static void _strmap_add_strnode(struct strnode **m, struct strnode *n) {
 	if (*m == NULL) {
 		*m = n;
 	} else {
-		_strmap_add_node(n->hash < (*m)->hash ? &(*m)->l : &(*m)-> r, n);
+		_strmap_add_strnode(n->hash < (*m)->hash ? &(*m)->l : &(*m)-> r, n);
 	}
 }
 
-static void _strmap_del_all(struct node **root, struct node **node, uint64_t hash) {
-	struct node *n = *node;
+static void _strmap_del_all(struct strnode **root, struct strnode **strnode, uint64_t hash) {
+	struct strnode *n = *strnode;
 
 	if (n != NULL) {
 		if (hash == n->hash) {
-			*node = NULL;
+			*strnode = NULL;
 			free(n->key);
 			free(n->val);
-			if (n->l != NULL) _strmap_add_node(root, n->l);
-			if (n->r != NULL) _strmap_add_node(root, n->r);
+			if (n->l != NULL) _strmap_add_strnode(root, n->l);
+			if (n->r != NULL) _strmap_add_strnode(root, n->r);
 			free(n);
 		} else {
 			_strmap_del_all(root, hash < n->hash ? &n->l : &n->r, hash);
@@ -57,14 +65,14 @@ static void _strmap_del_all(struct node **root, struct node **node, uint64_t has
 	}
 }
 
-static void _strmap_del(struct node **root, struct node **node, uint64_t hash) {
-	struct node *n = *node;
+static void _strmap_del(struct strnode **root, struct strnode **strnode, uint64_t hash) {
+	struct strnode *n = *strnode;
 
 	if (n != NULL) {
 		if (hash == n->hash) {
-			*node = NULL;
-			if (n->l != NULL) _strmap_add_node(root, n->l);
-			if (n->r != NULL) _strmap_add_node(root, n->r);
+			*strnode = NULL;
+			if (n->l != NULL) _strmap_add_strnode(root, n->l);
+			if (n->r != NULL) _strmap_add_strnode(root, n->r);
 			free(n);
 		} else {
 			_strmap_del(root, hash < n->hash ? &n->l : &n->r, hash);
