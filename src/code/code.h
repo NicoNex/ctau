@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 enum opcode {
-    op_constant,
+	op_constant,
 	op_true,
 	op_false,
 	op_null,
