@@ -25,13 +25,21 @@ enum obj_type {
 	obj_string
 };
 
+struct function {
+	uint8_t *instructions;
+	size_t len;
+	int num_locals;
+	int num_params;
+};
+
 typedef struct object object;
 
 union data {
 	uint64_t i;
 	double f;
 	char *str;
-	struct object *list;
+	struct object **list;
+	struct function *fn;
 };
 
 struct object {
@@ -40,7 +48,5 @@ struct object {
     size_t len;
 	void (*dispose)(struct object *o);
 };
-
-// typedef void (*disposefn)(struct object *o);
 
 #endif
