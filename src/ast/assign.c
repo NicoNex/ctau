@@ -10,7 +10,7 @@ int compile_assign(struct node *n, struct compiler *c) {
 	int pos = 0;
 
 	switch (a->l->type) {
-	case identifier_node: {
+	case identifier_node_t: {
 		struct symbol *s = compiler_define(c, a->l->data);
 		CHECK(a->r->compile(a->r, c));
 
@@ -43,5 +43,6 @@ struct node *new_assign(struct node *l, struct node *r) {
 	a->l = l;
 	a->r = r;
 
-	return new_node(a, assign_node, compile_assign, dispose_assign);
+	return new_node(a, assign_node_t, compile_assign, dispose_assign);
 }
+

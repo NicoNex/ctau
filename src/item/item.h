@@ -1,6 +1,8 @@
 #ifndef ITEM_H_
 #define ITEM_H_
 
+#include <stddef.h>
+
 enum item_type {
 	item_eof,
 	item_error,

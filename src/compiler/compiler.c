@@ -209,3 +209,4 @@ struct compiler *new_compiler() {
 	//TODO: define builtins.
 	return c;
 }
+

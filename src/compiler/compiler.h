@@ -88,3 +88,4 @@ void symbol_table_free(struct symbol_table *s);
 struct symbol *symbol_table_define(struct symbol_table *s, char *name);
 
 #endif
+

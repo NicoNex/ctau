@@ -1,7 +1,7 @@
 #include "ast.h"
 
 int compile_block(struct node *n, struct compiler *c) {
-	struct block *b = n->data;
+	struct block_node *b = n->data;
 	int pos = 0;
 
 	for (int i = 0; i < b->len; i++) {
@@ -17,7 +17,7 @@ int compile_block(struct node *n, struct compiler *c) {
 }
 
 void dispose_block(struct node *n) {
-	struct block *b = n->data;
+	struct block_node *b = n->data;
 
 	for (int i = 0; i < b->len; i++) {
 		b->nodes[i]->dispose(b->nodes[i]);
@@ -27,13 +27,13 @@ void dispose_block(struct node *n) {
 	free(n);
 }
 
-void block_add_statement(struct block *b, struct node *s) {
+void block_add_statement(struct block_node *b, struct node *s) {
 	b->nodes = realloc(b->nodes, sizeof(struct node *) * ++b->len);
 	b->nodes[b->len-1] = s;
 }
 
 struct node *new_block() {
-	struct block *b = calloc(1, sizeof(struct block));
+	struct block *b = calloc(1, sizeof(struct block_node));
 	return new_node(b, block_node_t, compile_block, dispose_block);
 }
 

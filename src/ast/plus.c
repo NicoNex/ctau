@@ -25,3 +25,4 @@ struct node *new_plus(struct node *l, struct node *r) {
 
 	return new_node(p, plus_node_t, compile_plus, dispose_plus);
 }
+

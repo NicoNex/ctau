@@ -13,3 +13,4 @@ void dispose_integer(struct node *n) {
 struct node *new_integer(int64_t *val) {
 	return new_node(val, integer_node_t, compile_integer, dispose_integer);
 }
+

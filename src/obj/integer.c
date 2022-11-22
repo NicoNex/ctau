@@ -1,6 +1,7 @@
+#include <stdlib.h>
 #include "obj.h"
 
-static dispose_integer(struct object *o) {
+static void dispose_integer(struct object *o) {
 	free(o);
 }
 
@@ -12,3 +13,4 @@ struct object *new_integer_obj(uint64_t val) {
 
 	return o;
 }
+

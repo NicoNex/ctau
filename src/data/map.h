@@ -22,3 +22,4 @@ void strmap_free_all(strmap m);
 void strmap_free_fn(strmap m, free_fn freefn);
 
 #endif
+

@@ -58,3 +58,4 @@ struct node *new_function(char **params, size_t nparams, struct node *body);
 void block_add_statement(struct block_node *b, struct node *s);
 
 #endif
+

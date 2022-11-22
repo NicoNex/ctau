@@ -22,3 +22,4 @@ struct lexer new_lexer(char *input, size_t len);
 void lexer_run(struct lexer *l);
 
 #endif
+

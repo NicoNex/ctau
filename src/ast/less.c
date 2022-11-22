@@ -25,3 +25,4 @@ struct node *new_less(struct node *l, struct node *r) {
 
 	return new_node(less, less_node_t, compile_less, dispose_less);
 }
+

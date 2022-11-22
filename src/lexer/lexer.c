@@ -322,3 +322,4 @@ struct lexer new_lexer(char *input, size_t len) {
 	l.state = NULL;
 	return l;
 }
+

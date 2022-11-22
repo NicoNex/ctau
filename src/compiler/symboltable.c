@@ -92,3 +92,4 @@ void symbol_table_free(struct symbol_table *s) {
 	free(s->free_symbols);
 	free(s);
 }
+

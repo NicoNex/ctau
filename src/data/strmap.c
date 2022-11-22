@@ -1,14 +1,6 @@
 #include <stdlib.h>
 #include "map.h"
 
-struct strnode {
-	uint64_t hash;
-	char *key;
-	void *val;
-	struct strnode *l;
-	struct strnode *r;
-};
-
 static inline struct strnode *new_strnode(uint64_t hash, char *key, void *val) {
 	struct strnode *n = calloc(1, sizeof(struct strnode));
 	n->hash = hash;
@@ -137,3 +129,4 @@ void strmap_free_fn(strmap m, free_fn freefn) {
 		free(m);
 	}
 }
+

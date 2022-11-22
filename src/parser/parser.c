@@ -523,3 +523,4 @@ static inline infixfn infix_parser(enum item_type type) {
 		return NULL;
 	}
 }
+

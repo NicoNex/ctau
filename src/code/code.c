@@ -110,3 +110,4 @@ int read_operands(struct definition def, uint8_t *ins, int **operands) {
 
 	return offset;
 }
+

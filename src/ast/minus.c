@@ -25,3 +25,4 @@ struct node *new_minus(struct node *l, struct node *r) {
 
 	return new_node(m, minus_node_t, compile_minus, dispose_minus);
 }
+

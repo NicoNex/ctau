@@ -21,3 +21,4 @@ typedef struct node *(*infixfn)(struct parser *p, struct node *n);
 struct node *parse_input(char *input, size_t len);
 
 #endif
+

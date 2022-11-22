@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "obj.h"
 
 void dispose_function(struct object *o) {
@@ -19,3 +20,4 @@ struct object *new_function_obj(uint8_t *insts, size_t len, int num_locals, int 
 
 	return o;
 }
+

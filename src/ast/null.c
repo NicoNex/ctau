@@ -11,3 +11,4 @@ void dispose_null(struct node *n) {
 struct node *new_null() {
 	return new_node(NULL, null_node_t, compile_null, dispose_null);
 }
+

@@ -9,3 +9,4 @@ struct node *new_node(void *data, enum node_type t, compilefn cfn, disposefn dfn
 
 	return n;
 }
+

@@ -43,3 +43,4 @@ struct node *new_call(struct node *fn, struct node **args, size_t arglen) {
 
 	return new_node(c, call_node_t, compile_call, dispose_call);
 }
+

@@ -1,6 +1,7 @@
+#include <stdlib.h>
 #include "obj.h"
 
-static dispose_boolean(struct object *o) {
+static void dispose_boolean(struct object *o) {
 	free(o);
 }
 
@@ -12,3 +13,4 @@ struct object *new_boolean_obj(int b) {
 
 	return o;
 }
+

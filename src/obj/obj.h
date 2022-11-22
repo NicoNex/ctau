@@ -54,3 +54,4 @@ struct object *new_boolean_obj(int b);
 struct object *new_integer_obj(uint64_t val);
 
 #endif
+
