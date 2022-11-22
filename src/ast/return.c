@@ -5,7 +5,10 @@ struct return_node {
 };
 
 int compile_return(struct node *n, struct compiler *c) {
-	return -1;
+	struct return_node *ret = n->data;
+
+	CHECK(ret->val->compile(ret->val, c));
+	return compiler_emit(c, op_return_value);
 }
 
 void dispose_return(struct node *n) {

@@ -16,8 +16,8 @@ int compiler_add_inst(struct compiler *c, uint8_t *ins, size_t len) {
 	return scope->ninsts;
 }
 
-int compiler_add_const(struct compiler *c, struct obj *o) {
-	c->consts = realloc(c->consts, sizeof(struct obj *) * ++c->nconsts);
+int compiler_add_const(struct compiler *c, struct object *o) {
+	c->consts = realloc(c->consts, sizeof(struct object *) * ++c->nconsts);
 	return c->nconsts - 1;
 }
 
@@ -173,6 +173,10 @@ struct symbol *compiler_define(struct compiler *c, char *name) {
 	return symbol_table_define(c->st, name);
 }
 
+struct symbol *compiler_resolve(struct compiler *c, char *name) {
+	return symbol_table_resolve(c->st, name);
+}
+
 int compiler_load_symbol(struct compiler *c, struct symbol *s) {
 	switch (s->scope) {
 	case global_scope:
@@ -190,7 +194,7 @@ int compiler_load_symbol(struct compiler *c, struct symbol *s) {
 	}
 }
 
-struct compiler *new_compiler_with_state(struct symbol_table *st, struct obj **consts) {
+struct compiler *new_compiler_with_state(struct symbol_table *st, struct object **consts) {
 	struct compiler *c = calloc(1, sizeof(struct compiler));
 	c->st = st;
 	c->consts = consts;

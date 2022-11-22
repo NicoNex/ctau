@@ -1,7 +1,8 @@
 #include "ast.h"
+#include "../obj/obj.h"
 
 int compile_null(struct node *n, struct compiler *c) {
-	return -1;
+	return compiler_emit(c, op_constant, compiler_add_const(c, null_obj));
 }
 
 void dispose_null(struct node *n) {

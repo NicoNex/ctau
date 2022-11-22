@@ -35,7 +35,7 @@ struct function {
 typedef struct object object;
 
 union data {
-	uint64_t i;
+	int64_t i;
 	double f;
 	char *str;
 	struct object **list;
@@ -52,6 +52,29 @@ struct object {
 struct object *new_function_obj(uint8_t *insts, size_t len, int num_locals, int num_params);
 struct object *new_boolean_obj(int b);
 struct object *new_integer_obj(uint64_t val);
+
+void dummy_dispose(struct object *o) {}
+
+object *true_obj = &(struct object) {
+    .data.i = 1,
+    .type = obj_boolean,
+    .len = 0,
+    .dispose = dummy_dispose
+};
+
+object *false_obj = &(struct object) {
+    .data.i = 0,
+    .type = obj_boolean,
+    .len = 0,
+    .dispose = dummy_dispose
+};
+
+object *null_obj = &(struct object) {
+    .data.i = 0,
+    .type = obj_null,
+    .len = 0,
+    .dispose = dummy_dispose
+};
 
 #endif
 

@@ -6,7 +6,12 @@ struct minus_node {
 };
 
 int compile_minus(struct node *n, struct compiler *c) {
-	return -1;
+	struct minus_node *m = n->data;
+
+	CHECK(m->l->compile(m->l, c));
+	CHECK(m->r->compile(m->r, c));
+
+	return compiler_emit(c, op_minus);
 }
 
 void dispose_minus(struct node *n) {

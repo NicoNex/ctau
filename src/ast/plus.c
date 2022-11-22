@@ -6,7 +6,12 @@ struct plus_node {
 };
 
 int compile_plus(struct node *n, struct compiler *c) {
-	return -1;
+	struct plus_node *p = n->data;
+
+	CHECK(p->l->compile(p->l, c));
+	CHECK(p->r->compile(p->r, c));
+
+	return compiler_emit(c, op_add);
 }
 
 void dispose_plus(struct node *n) {

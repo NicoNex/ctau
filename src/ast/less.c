@@ -6,7 +6,14 @@ struct less_node {
 };
 
 int compile_less(struct node *n, struct compiler *c) {
-	return -1;
+	struct less_node *ln = n->data;
+
+	// The order of the compilation of the operands is inverted
+	// since we reuse the op_greater_than opcode.
+	CHECK(ln->r->compile(ln->r, c));
+	CHECK(ln->l->compile(ln->l, c));
+
+	return compiler_emit(c, op_greater_than);
 }
 
 void dispose_less(struct node *n) {

@@ -1,7 +1,14 @@
+#include <stdio.h>
 #include "ast.h"
 
 int compile_identifier(struct node *n, struct compiler *c) {
-	return -1;
+	struct symbol *s = compiler_resolve(c, n->data);
+
+	if (s == NULL) {
+		printf("undefined variable %s\n", (char *) n->data);
+		return -1;
+	}
+	return compiler_load_symbol(c, s);
 }
 
 void dispose_identifier(struct node *n) {

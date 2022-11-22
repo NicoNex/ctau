@@ -1,8 +1,10 @@
 #include <stdint.h>
 #include "ast.h"
+#include "../obj/obj.h"
 
 int compile_integer(struct node *n, struct compiler *c) {
-	return -1;
+	int pos = compiler_add_const(c, new_integer_obj(*(int64_t *)n->data));
+	return compiler_emit(c, op_constant, pos);
 }
 
 void dispose_integer(struct node *n) {
