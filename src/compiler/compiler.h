@@ -62,13 +62,31 @@ struct bytecode {
 	size_t nconsts;
 };
 
-struct symbol_table *new_symbol_table();
-struct symbol_table *new_enclosed_symbol_table(struct symbol_table *outer);
-void symbol_table_free(struct symbol_table *s);
+int compiler_add_inst(struct compiler *c, uint8_t *ins, size_t len);
+int compiler_add_const(struct compiler *c, struct obj *o);
+void compiler_set_last_inst(struct compiler *c, enum opcode op, int pos);
+int compiler_emit(struct compiler *c, enum opcode op, ...);
+int compiler_last_is(struct compiler *c, uint8_t op);
+void compiler_remove_last(struct compiler *c);
+void compiler_replace_inst(struct compiler *c, int pos, uint8_t *new, size_t len);
+void compiler_replace_operand(struct compiler *c, int op_pos, int operand);
+int compiler_replace_continue_operand(struct compiler *c, int start, int end, int operand);
+int compiler_replace_break_operand(struct compiler *c, int start, int end, int operand);
+void compiler_replace_last_pop_with_return(struct compiler *c);
+void compiler_enter_scope(struct compiler *c);
+uint8_t *compiler_leave_scope(struct compiler *c);
+int compiler_pos(struct compiler *c);
+struct symbol *compiler_define(struct compiler *c, char *name);
+struct compiler *new_compiler_with_state(struct symbol_table *st, struct obj **consts);
+struct compiler *new_compiler();
 
-struct symbol *symbol_table_define(struct symbol_table *s, char *name);
-struct symbol *symbol_table_define_free(struct symbol_table *s, struct symbol *original);
-struct symbol *symbol_table_resolve(struct symbol_table *s, char *name);
-struct symbol *define_builtin(struct symbol_table *s, int index, char *name);
+// struct symbol_table *new_symbol_table();
+// struct symbol_table *new_enclosed_symbol_table(struct symbol_table *outer);
+// void symbol_table_free(struct symbol_table *s);
+
+// struct symbol *symbol_table_define(struct symbol_table *s, char *name);
+// struct symbol *symbol_table_define_free(struct symbol_table *s, struct symbol *original);
+// struct symbol *symbol_table_resolve(struct symbol_table *s, char *name);
+// struct symbol *define_builtin(struct symbol_table *s, int index, char *name);
 
 #endif

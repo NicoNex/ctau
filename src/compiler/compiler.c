@@ -168,6 +168,10 @@ int compile(struct compiler *c, struct node *tree) {
 	return tree->compile(tree, c);
 }
 
+struct symbol *compiler_define(struct compiler *c, char *name) {
+	return symbol_table_define(c->st, name);
+}
+
 struct compiler *new_compiler_with_state(struct symbol_table *st, struct obj **consts) {
 	struct compiler *c = calloc(1, sizeof(struct compiler));
 	c->st = st;

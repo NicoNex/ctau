@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include "../compiler/compiler.h"
 
+#define CHECK(pos) if (pos == -1) return pos
+
 enum node_type {
 	plus_node,
 	minus_node,

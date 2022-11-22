@@ -6,6 +6,29 @@ struct assign {
 };
 
 int compile_assign(struct node *n, struct compiler *c) {
+	struct assign *a = n->data;
+	int pos = 0;
+
+	switch (a->l->type) {
+	case identifier_node: {
+		struct symbol *s = compiler_define(c, l->data);
+		CHECK(a->r->compile(a->r));
+
+		enum opcode op = s->scope == global_scope ? op_set_global : op_set_local;
+		return compiler_emit(c, op, s->index);
+	}
+
+	case dot_node:
+	case index_node:
+		puts("assign: node not yet supported");
+		return -1;
+
+	default:
+		puts("cannot assign to literal");
+		return -1;
+
+	}
+
 	return -1;
 }
 
