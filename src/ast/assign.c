@@ -11,25 +11,22 @@ int compile_assign(struct node *n, struct compiler *c) {
 
 	switch (a->l->type) {
 	case identifier_node: {
-		struct symbol *s = compiler_define(c, l->data);
-		CHECK(a->r->compile(a->r));
+		struct symbol *s = compiler_define(c, a->l->data);
+		CHECK(a->r->compile(a->r, c));
 
 		enum opcode op = s->scope == global_scope ? op_set_global : op_set_local;
 		return compiler_emit(c, op, s->index);
 	}
 
-	case dot_node:
-	case index_node:
-		puts("assign: node not yet supported");
-		return -1;
+	// case dot_node:
+	// case index_node:
+	// 	puts("assign: node not yet supported");
+	// 	return -1;
 
 	default:
 		puts("cannot assign to literal");
 		return -1;
-
 	}
-
-	return -1;
 }
 
 void dispose_assign(struct node *n) {

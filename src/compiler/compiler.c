@@ -150,8 +150,9 @@ void compiler_enter_scope(struct compiler *c) {
 	c->st = new_enclosed_symbol_table(c->st);
 }
 
-uint8_t *compiler_leave_scope(struct compiler *c) {
+uint8_t *compiler_leave_scope(struct compiler *c, size_t *len) {
 	uint8_t *insts = c->scopes[c->scope_index].insts;
+	*len = c->scopes[c->scope_index].ninsts;
 	c->scopes = realloc(c->scopes, sizeof(struct scope) * --c->nscopes);
 	struct symbol_table *oldst = c->st;
 	c->st = c->st->outer;
@@ -170,6 +171,23 @@ int compile(struct compiler *c, struct node *tree) {
 
 struct symbol *compiler_define(struct compiler *c, char *name) {
 	return symbol_table_define(c->st, name);
+}
+
+int compiler_load_symbol(struct compiler *c, struct symbol *s) {
+	switch (s->scope) {
+	case global_scope:
+		return compiler_emit(c, op_get_global, s->index);
+	case local_scope:
+		return compiler_emit(c, op_get_local, s->index);
+	case builtin_scope:
+		return compiler_emit(c, op_get_builtin, s->index);
+	case free_scope:
+		return compiler_emit(c, op_get_free, s->index);
+	case function_scope:
+		return compiler_emit(c, op_current_closure, s->index);
+	default:
+		return -1;
+	}
 }
 
 struct compiler *new_compiler_with_state(struct symbol_table *st, struct obj **consts) {

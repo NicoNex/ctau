@@ -49,4 +49,8 @@ struct object {
 	void (*dispose)(struct object *o);
 };
 
+struct object *new_function_obj(uint8_t *insts, size_t len, int num_locals, int num_params);
+struct object *new_boolean_obj(int b);
+struct object *new_integer_obj(uint64_t val);
+
 #endif

@@ -7,7 +7,17 @@ struct call {
 };
 
 int compile_call(struct node *n, struct compiler *c) {
-	return -1;
+	struct call *call = n->data;
+	int pos = 0;
+
+	CHECK(pos = call->fn->compile(call->fn, c));
+
+	for (int i = 0; i < call->arglen; i++) {
+		struct node *arg = call->args[i];
+		CHECK(pos = arg->compile(arg, c));
+	}
+
+	return compiler_emit(c, op_call, call->arglen);
 }
 
 void dispose_call(struct node *n) {

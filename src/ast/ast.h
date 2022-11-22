@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "../compiler/compiler.h"
 
-#define CHECK(pos) if (pos == -1) return pos
+#define CHECK(pos) if ((pos) == -1) return -1
 
 enum node_type {
 	plus_node,

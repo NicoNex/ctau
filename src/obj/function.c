@@ -5,7 +5,7 @@ void dispose_function(struct object *o) {
 	free(o);
 }
 
-struct object *new_function(uint8_t *insts, size_t len, int num_locals, int num_params) {
+struct object *new_function_obj(uint8_t *insts, size_t len, int num_locals, int num_params) {
 	struct function *fn = malloc(sizeof(struct function));
 	fn->instructions = insts;
 	fn->len = len;

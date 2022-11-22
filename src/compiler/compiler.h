@@ -77,6 +77,7 @@ void compiler_enter_scope(struct compiler *c);
 uint8_t *compiler_leave_scope(struct compiler *c);
 int compiler_pos(struct compiler *c);
 struct symbol *compiler_define(struct compiler *c, char *name);
+int compiler_load_symbol(struct compiler *c, struct symbol *s);
 struct compiler *new_compiler_with_state(struct symbol_table *st, struct obj **consts);
 struct compiler *new_compiler();
 

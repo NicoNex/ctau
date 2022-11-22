@@ -1,7 +1,19 @@
 #include "ast.h"
 
 int compile_block(struct node *n, struct compiler *c) {
-	return -1;
+	struct block *b = n->data;
+	int pos = 0;
+
+	for (int i = 0; i < b->len; i++) {
+		struct node *expr = b->nodes[i];
+		CHECK(pos = expr->compile(expr, c));
+
+		if (expr->type == return_node) {
+			pos = compiler_emit(c, op_pop);
+		}
+	}
+
+	return pos;
 }
 
 void dispose_block(struct node *n) {
@@ -24,3 +36,4 @@ struct node *new_block() {
 	struct block *b = calloc(1, sizeof(struct block));
 	return new_node(b, block_node, compile_block, dispose_block);
 }
+
