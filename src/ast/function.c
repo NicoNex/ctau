@@ -1,13 +1,14 @@
 #include "ast.h"
+#include "../obj/obj.h"
 
-struct function {
+struct function_node {
 	struct node *body;
 	char **params;
 	size_t nparams;
 };
 
 int compile_function(struct node *n, struct compiler *c) {
-	struct function *fn = n->data;
+	struct function_node *fn = n->data;
 
 	compiler_enter_scope(c);
 	for (int i = 0; i < fn->nparams; i++) {
@@ -39,7 +40,7 @@ int compile_function(struct node *n, struct compiler *c) {
 }
 
 void dispose_function(struct node *n) {
-	struct function *f = n->data;
+	struct function_node *f = n->data;
 
 	if (f->body != NULL) f->body->dispose(f->body);
 	if (f->params != NULL) {
@@ -53,10 +54,11 @@ void dispose_function(struct node *n) {
 }
 
 struct node *new_function(char **params, size_t nparams, struct node *body) {
-	struct function *f = malloc(sizeof(struct function));
+	struct function_node *f = malloc(sizeof(struct function));
 	f->body = body;
 	f->params = params;
 	f->nparams = nparams;
 
-	return new_node(f, function_node, compile_function, dispose_function);
+	return new_node(f, function_node_t, compile_function, dispose_function);
 }
+

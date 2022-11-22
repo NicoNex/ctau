@@ -10,5 +10,5 @@ void dispose_identifier(struct node *n) {
 }
 
 struct node *new_identifier(char *name) {
-	return new_node(name, identifier_node, compile_identifier, dispose_identifier);
+	return new_node(name, identifier_node_t, compile_identifier, dispose_identifier);
 }

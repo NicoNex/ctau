@@ -1,13 +1,13 @@
 #include "ast.h"
 
-struct call {
+struct call_node {
 	struct node *fn;
 	struct node **args;
 	size_t arglen;
 };
 
 int compile_call(struct node *n, struct compiler *c) {
-	struct call *call = n->data;
+	struct call_node *call = n->data;
 	int pos = 0;
 
 	CHECK(pos = call->fn->compile(call->fn, c));
@@ -21,7 +21,7 @@ int compile_call(struct node *n, struct compiler *c) {
 }
 
 void dispose_call(struct node *n) {
-	struct call *c = n->data;
+	struct call_node *c = n->data;
 
 	if (c->fn != NULL) c->fn->dispose(c->fn);
 
@@ -36,10 +36,10 @@ void dispose_call(struct node *n) {
 }
 
 struct node *new_call(struct node *fn, struct node **args, size_t arglen) {
-	struct call *c = malloc(sizeof(struct call));
+	struct call_node *c = malloc(sizeof(struct call_node));
 	c->fn = fn;
 	c->args = args;
 	c->arglen = arglen;
 
-	return new_node(c, call_node, compile_call, dispose_call);
+	return new_node(c, call_node_t, compile_call, dispose_call);
 }

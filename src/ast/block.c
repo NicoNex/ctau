@@ -8,7 +8,7 @@ int compile_block(struct node *n, struct compiler *c) {
 		struct node *expr = b->nodes[i];
 		CHECK(pos = expr->compile(expr, c));
 
-		if (expr->type == return_node) {
+		if (expr->type == return_node_t) {
 			pos = compiler_emit(c, op_pop);
 		}
 	}
@@ -34,6 +34,6 @@ void block_add_statement(struct block *b, struct node *s) {
 
 struct node *new_block() {
 	struct block *b = calloc(1, sizeof(struct block));
-	return new_node(b, block_node, compile_block, dispose_block);
+	return new_node(b, block_node_t, compile_block, dispose_block);
 }
 

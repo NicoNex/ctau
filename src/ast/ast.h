@@ -9,21 +9,21 @@
 #define CHECK(pos) if ((pos) == -1) return -1
 
 enum node_type {
-	plus_node,
-	minus_node,
-	integer_node,
-	less_node,
-	lesseq_node,
-	greater_node,
-	greatereq_node,
-	block_node,
-	function_node,
-	call_node,
-	null_node,
-	return_node,
-	identifier_node,
-	ifelse_node,
-	assign_node
+	plus_node_t,
+	minus_node_t,
+	integer_node_t,
+	less_node_t,
+	lesseq_node_t,
+	greater_node_t,
+	greatereq_node_t,
+	block_node_t,
+	function_node_t,
+	call_node_t,
+	null_node_t,
+	return_node_t,
+	identifier_node_t,
+	ifelse_node_t,
+	assign_node_t
 };
 
 struct node {
@@ -36,7 +36,7 @@ struct node {
 typedef int (*compilefn)(struct node *n, struct compiler *c);
 typedef void (*disposefn)(struct node *n);
 
-struct block {
+struct block_node {
 	struct node **nodes;
 	size_t len;
 };
@@ -55,6 +55,6 @@ struct node *new_call(struct node *fn, struct node **args, size_t arglen);
 struct node *new_ifelse(struct node *cond, struct node *body, struct node *altern);
 struct node *new_function(char **params, size_t nparams, struct node *body);
 
-void block_add_statement(struct block *b, struct node *s);
+void block_add_statement(struct block_node *b, struct node *s);
 
 #endif

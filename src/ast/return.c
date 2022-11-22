@@ -1,6 +1,6 @@
 #include "ast.h"
 
-struct retnode {
+struct return_node {
 	struct node *val;
 };
 
@@ -9,7 +9,7 @@ int compile_return(struct node *n, struct compiler *c) {
 }
 
 void dispose_return(struct node *n) {
-	struct retnode *r = n->data;
+	struct return_node *r = n->data;
 	if (r->val != NULL) r->val->dispose(r->val);
 
 	free(r);
@@ -17,8 +17,8 @@ void dispose_return(struct node *n) {
 }
 
 struct node *new_return(struct node *val) {
-	struct retnode *r = malloc(sizeof(struct retnode));
+	struct return_node *r = malloc(sizeof(struct return_node));
 	r->val = val;
 
-	return new_node(r, return_node, compile_return, dispose_return);
+	return new_node(r, return_node_t, compile_return, dispose_return);
 }
