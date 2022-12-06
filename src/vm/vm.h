@@ -10,7 +10,7 @@
 #define MAX_FRAMES 1024
 
 struct frame {
-	struct closure cl;
+	struct object *closure;
 	uint8_t *ip;
 	uint32_t base_ptr;
 };

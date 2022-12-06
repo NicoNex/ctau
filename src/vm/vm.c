@@ -9,10 +9,11 @@
 
 #define vm_current_frame(vm) (&vm->frames[vm->frame_idx])
 #define vm_stack_push(vm, obj) vm->stack[vm->sp++] = obj
+#define vm_stack_pop(vm) vm->stack[--vm->sp]
 
 #define UNHANDLED() puts("unhandled opcode"); return -1
 
-struct frame new_frame(struct closure cl, uint32_t base_ptr) {
+struct frame new_frame(struct object *cl, uint32_t base_ptr) {
 	return (struct frame) {
 		.cl = cl,
 		.base_ptr = base_ptr
@@ -28,8 +29,8 @@ struct vm *new_vm(struct bytecode bytecode) {
 	vm->frame_idx = 1;
 	vm->state.consts = bytecode.consts;
 
-	struct function *fn = new_function_obj(bytecode.insts, bytecode.ninsts, 0, 0);
-	struct closure cl = (struct closure) {.fn = fn, .free = NULL};
+	struct object *fn = new_function_obj(bytecode.insts, bytecode.ninsts, 0, 0);
+	struct object *cl = new_closure_obj(fn, NULL, 0);
 	vm->frames[0] = new_frame(cl, 0);
 
 	return vm;
@@ -55,7 +56,7 @@ static inline void vm_push_closure(struct vm *restrict vm, uint32_t const_idx, u
 		free[i] = vm->stack[vm->sp-num_free+i];
 	}
 
-	struct closure *cl = new_closure_obj(cnst->data.fn, free, num_free);
+	struct object *cl = new_closure_obj(cnst->data.fn, free, num_free);
 	vm->sp -= num_free;
 	vm_stack_push(vm, cl);
 }
@@ -108,7 +109,7 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_CURRENT_CLOSURE: {
-
+		vm_stack_push(vm, frame->cl);
 		DISPATCH();
 	}
 
@@ -124,69 +125,69 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_MUL: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_DIV: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_MOD: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 
 	TARGET_BW_AND: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_BW_OR: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_BW_XOR: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_BW_NOT: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_BW_LSHIFT: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_BW_RSHIFT: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 
 	TARGET_AND: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_OR: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_EQUAL: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_NOT_EQUAL: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
@@ -202,17 +203,17 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_MINUS: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_BANG: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_INDEX: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
@@ -223,7 +224,7 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_CONCURRENT_CALL: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
@@ -239,18 +240,18 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_JUMP: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_JUMP_NOT_TRUTHY: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 
 	TARGET_DOT: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
@@ -280,7 +281,7 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_BUILTIN: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
@@ -290,18 +291,18 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_LOAD_MODULE: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_INTERPOLATE: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 
 	TARGET_POP: {
-
+		vm_stack_pop(vm);
 		DISPATCH();
 	}
 }
