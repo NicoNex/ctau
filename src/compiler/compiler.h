@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "../ast/ast.h"
-#include "../object/object.h"
+#include "../obj/obj.h"
 #include "../code/code.h"
 #include "../data/map.h"
 
@@ -57,7 +57,7 @@ struct compiler {
 
 struct bytecode {
 	uint8_t *insts;
-	struct object *consts;
+	struct object **consts;
 	size_t ninsts;
 	size_t nconsts;
 };
@@ -79,6 +79,7 @@ int compiler_pos(struct compiler *c);
 struct symbol *compiler_define(struct compiler *c, char *name);
 int compiler_load_symbol(struct compiler *c, struct symbol *s);
 struct symbol *compiler_resolve(struct compiler *c, char *name);
+struct bytecode compiler_bytecode(struct compiler *c);
 struct compiler *new_compiler_with_state(struct symbol_table *st, struct object **consts);
 struct compiler *new_compiler();
 

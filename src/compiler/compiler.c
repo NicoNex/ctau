@@ -194,6 +194,15 @@ int compiler_load_symbol(struct compiler *c, struct symbol *s) {
 	}
 }
 
+struct bytecode compiler_bytecode(struct compiler *c) {
+	return (struct bytecode) {
+		.insts = c->scopes[c->scope_index].insts,
+		.consts = c->consts,
+		.ninsts = c->scopes[c->scope_index].ninsts,
+		.consts = c->nconsts
+	};
+}
+
 struct compiler *new_compiler_with_state(struct symbol_table *st, struct object **consts) {
 	struct compiler *c = calloc(1, sizeof(struct compiler));
 	c->st = st;

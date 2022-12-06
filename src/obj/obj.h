@@ -34,12 +34,19 @@ struct function {
 
 typedef struct object object;
 
+struct closure {
+	struct function *fn;
+	struct object **free;
+	size_t num_free;
+};
+
 union data {
 	int64_t i;
 	double f;
 	char *str;
 	struct object **list;
 	struct function *fn;
+	struct closure *cl;
 };
 
 struct object {
@@ -50,8 +57,10 @@ struct object {
 };
 
 struct object *new_function_obj(uint8_t *insts, size_t len, int num_locals, int num_params);
+struct object *new_closure_obj(struct function *fn, struct object **free, size_t num_free);
 struct object *new_boolean_obj(int b);
 struct object *new_integer_obj(uint64_t val);
+struct object *parse_bool(int b);
 
 void dummy_dispose(struct object *o) {}
 
