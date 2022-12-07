@@ -3,20 +3,22 @@
 #include "vm.h"
 #include "../obj/obj.h"
 #include "../code/code.h"
-#include "jump_table.h"
 
 #define DISPATCH() goto *jump_table[*frame->ip]
 
 #define vm_current_frame(vm) (&vm->frames[vm->frame_idx])
 #define vm_stack_push(vm, obj) vm->stack[vm->sp++] = obj
-#define vm_stack_pop(vm) vm->stack[--vm->sp]
+#define vm_stack_pop(vm) (vm->stack[--vm->sp])
+#define vm_stack_pop_ignore(vm) vm->sp -= 1;
+#define vm_stack_cur(vm) (vm->stack[vm->sp - 1])
 
 #define UNHANDLED() puts("unhandled opcode"); return -1
 
-struct frame new_frame(struct object *cl, uint32_t base_ptr) {
+static inline struct frame new_frame(struct object *cl, uint32_t base_ptr) {
 	return (struct frame) {
 		.cl = cl,
-		.base_ptr = base_ptr
+		.base_ptr = base_ptr,
+		.ip = cl->data.cl->fn->instructions
 	};
 }
 
@@ -30,18 +32,11 @@ struct vm *new_vm(struct bytecode bytecode) {
 	vm->state.consts = bytecode.consts;
 
 	struct object *fn = new_function_obj(bytecode.insts, bytecode.ninsts, 0, 0);
-	struct object *cl = new_closure_obj(fn, NULL, 0);
+	struct object *cl = new_closure_obj(fn->data.fn, NULL, 0);
 	vm->frames[0] = new_frame(cl, 0);
 
 	return vm;
 }
-
-/*
-#define vm_stack_pop_ignore(vm) vm->stack_pointer -= 1;
-#define vm_stack_pop(vm) (vm->stack->values[--vm->stack_pointer])
-#define vm_stack_cur(vm) (vm->stack->values[vm->stack_pointer - 1])
-#define vm_stack_push(vm, obj) vm->stack = insert_in_object_list(vm->stack, vm->stack_pointer++, obj);
-*/
 
 static inline void vm_push_closure(struct vm *restrict vm, uint32_t const_idx, uint32_t num_free) {
 	struct object *cnst = vm->state.consts[const_idx];
@@ -61,7 +56,90 @@ static inline void vm_push_closure(struct vm *restrict vm, uint32_t const_idx, u
 	vm_stack_push(vm, cl);
 }
 
+static inline struct object *unwrap(struct object *o) {
+	if (o->type == obj_getsetter) {
+		// TODO: fill this.
+	}
+	return o;
+}
+
+static inline int assert_types(struct object *o, size_t n, ...) {
+	va_list ptr;
+	va_start(ptr, n);
+	register enum obj_type type = o->type;
+
+	for (int i = 0; i < n; i++) {
+		if (o->type == va_arg(ptr, int)) {
+			return 1;
+		}
+	}
+	va_end(ptr);
+	return 0;
+}
+
+static inline void vm_exec_add(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	if (assert_types(left, 1, obj_integer) && assert_types(right, 1, obj_integer)) {
+		vm_stack_push(vm, new_integer_obj(left->data.i + right->data.i));
+	} else if (assert_types(left, 2, obj_integer, obj_float)
+			   && assert_types(right, 2, obj_integer, obj_float)) {
+		puts("adding two floats is not yet supported!");
+		exit(1);
+		vm_stack_push(vm, new_float_obj(left->data.f + right->data.f));
+	} else if (assert_types(left, 1, obj_string) && assert_types(right, 1, obj_string)) {
+		puts("adding two strings is not yet supported!");
+		exit(1);
+	}
+
+	puts("unsupported operator '+' for the two types");
+	exit(1);
+}
+
+static inline void vm_exec_sub(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	if (assert_types(left, 1, obj_integer) && assert_types(right, 1, obj_integer)) {
+		vm_stack_push(vm, new_integer_obj(left->data.i - right->data.i));
+	} else if (assert_types(left, 2, obj_integer, obj_float)
+			   && assert_types(right, 2, obj_integer, obj_float)) {
+		puts("subtracting two floats is not yet supported");
+		exit(1);
+		vm_stack_push(vm, new_float_obj(left->data.f - right->data.f));
+	} else if (assert_types(left, 1, obj_string) && assert_types(right, 1, obj_string)) {
+		puts("subtracting two strings is not yet supported");
+		exit(1);
+	}
+
+	puts("unsupported operator '-' for the two types");
+	exit(1);
+}
+
+static inline void vm_exec_greater_than(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	if (assert_types(left, 1, obj_integer) && assert_types(right, 1, obj_integer)) {
+		vm_stack_push(vm, parse_bool(left->data.i > right->data.i));
+	} else if (assert_types(left, 2, obj_integer, obj_float)
+			   && assert_types(right, 2, obj_integer, obj_float)) {
+		puts("comparing two floats is not yet supported");
+		exit(1);
+		vm_stack_push(vm, parse_bool(left->data.f > right->data.f));
+	} else if (assert_types(left, 1, obj_string) && assert_types(right, 1, obj_string)) {
+		puts("comparing two strings is not yet supported");
+		exit(1);
+	}
+
+	puts("unsupported operator '>' for the two types");
+	exit(1);
+}
+
 int vm_run(struct vm * restrict vm) {
+#include "jump_table.h"
+
 	struct frame *frame = vm_current_frame(vm);
 	DISPATCH();
 
@@ -115,12 +193,12 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_ADD: {
-
+		vm_exec_add(vm);
 		DISPATCH();
 	}
 
 	TARGET_SUB: {
-
+		vm_exec_sub(vm);
 		DISPATCH();
 	}
 
@@ -192,12 +270,12 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GREATER_THAN: {
-
+		vm_exec_greater_than(vm);
 		DISPATCH();
 	}
 
 	TARGET_GREATER_THAN_EQUAL: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
@@ -302,7 +380,7 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_POP: {
-		vm_stack_pop(vm);
+		vm_stack_pop_ignore(vm);
 		DISPATCH();
 	}
 }
