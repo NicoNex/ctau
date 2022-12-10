@@ -199,7 +199,7 @@ struct bytecode compiler_bytecode(struct compiler *c) {
 		.insts = c->scopes[c->scope_index].insts,
 		.consts = c->consts,
 		.ninsts = c->scopes[c->scope_index].ninsts,
-		.consts = c->nconsts
+		.nconsts = c->nconsts
 	};
 }
 

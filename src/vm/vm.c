@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdio.h>
 
 #include "vm.h"
@@ -72,7 +73,7 @@ static inline int assert_types(struct object *o, size_t n, ...) {
 	register enum obj_type type = o->type;
 
 	for (int i = 0; i < n; i++) {
-		if (o->type == va_arg(ptr, int)) {
+		if (type == va_arg(ptr, int)) {
 			return 1;
 		}
 	}
@@ -178,7 +179,7 @@ static inline void vm_exec_return_value(struct vm * restrict vm) {
 	struct object *o = unwrap(vm_stack_pop(vm));
 	struct frame *frame = vm_pop_frame(vm);
 	vm->sp = frame->base_ptr - 1;
-	vm_stack_push(vm, null_obj);
+	vm_stack_push(vm, o);
 }
 
 int vm_run(struct vm * restrict vm) {

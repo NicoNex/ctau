@@ -30,5 +30,6 @@ struct vm {
 };
 
 struct vm *new_vm(struct bytecode bytecode);
+int vm_run(struct vm * restrict vm);
 
 #endif

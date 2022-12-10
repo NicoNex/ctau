@@ -397,6 +397,8 @@ static inline enum precedence get_precedence(enum item_type type) {
 		return indexprec;
 	case item_dot:
 		return dot;
+	default:
+		return lowest;
 	}
 }
 
