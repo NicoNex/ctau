@@ -20,7 +20,7 @@ int compile_call(struct node *n, struct compiler *c) {
 	return compiler_emit(c, op_call, call->arglen);
 }
 
-void dispose_call(struct node *n) {
+void dispose_call_node(struct node *n) {
 	struct call_node *c = n->data;
 
 	if (c->fn != NULL) c->fn->dispose(c->fn);
@@ -41,6 +41,6 @@ struct node *new_call(struct node *fn, struct node **args, size_t arglen) {
 	c->args = args;
 	c->arglen = arglen;
 
-	return new_node(c, call_node_t, compile_call, dispose_call);
+	return new_node(c, call_node_t, compile_call, dispose_call_node);
 }
 

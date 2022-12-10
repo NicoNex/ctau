@@ -52,7 +52,7 @@ union data {
 struct object {
 	union data data;
 	enum obj_type type;
-    size_t len;
+	size_t len;
 	void (*dispose)(struct object *o);
 };
 
@@ -66,26 +66,9 @@ struct object *parse_bool(int b);
 
 void dummy_dispose(struct object *o);
 
-object *true_obj = &(struct object) {
-    .data.i = 1,
-    .type = obj_boolean,
-    .len = 0,
-    .dispose = dummy_dispose
-};
-
-object *false_obj = &(struct object) {
-    .data.i = 0,
-    .type = obj_boolean,
-    .len = 0,
-    .dispose = dummy_dispose
-};
-
-object *null_obj = &(struct object) {
-    .data.i = 0,
-    .type = obj_null,
-    .len = 0,
-    .dispose = dummy_dispose
-};
+extern struct object *true_obj;
+extern struct object *false_obj;
+extern struct object *null_obj;
 
 #endif
 

@@ -66,61 +66,7 @@ struct definition {
 	int noperands;
 };
 
-struct definition definitions[op_pop+1] = {
-	{"op_constant", (int[1]) {2}, 1},
-	{"op_true", (int[1]) {0}, 0},
-	{"op_false", (int[1]) {0}, 0},
-	{"op_null", (int[1]) {0}, 0},
-	{"op_list", (int[1]) {2}, 1},
-	{"op_map", (int[1]) {2}, 1},
-	{"op_closure", (int[2]) {2, 1}, 2},
-	{"op_current_closure", (int[1]) {0}, 0},
-
-	{"op_add", (int[1]) {0}, 0},
-	{"op_sub", (int[1]) {0}, 0},
-	{"op_mul", (int[1]) {0}, 0},
-	{"op_div", (int[1]) {0}, 0},
-	{"op_mod", (int[1]) {0}, 0},
-
-	{"op_bw_and", (int[1]) {0}, 0},
-	{"op_bw_or", (int[1]) {0}, 0},
-	{"op_bw_xor", (int[1]) {0}, 0},
-	{"op_bw_not", (int[1]) {0}, 0},
-	{"op_bw_lshift", (int[1]) {0}, 0},
-	{"op_bw_rshift", (int[1]) {0}, 0},
-
-	{"op_and", (int[1]) {0}, 0},
-	{"op_or", (int[1]) {0}, 0},
-	{"op_equal", (int[1]) {0}, 0},
-	{"op_not_equal", (int[1]) {0}, 0},
-	{"op_greater_than", (int[1]) {0}, 0},
-	{"op_greater_than_equal", (int[1]) {0}, 0},
-
-	{"op_minus", (int[1]) {0}, 0},
-	{"op_bang", (int[1]) {0}, 0},
-	{"op_index", (int[1]) {0}, 0},
-
-	{"op_call", (int[1]) {1}, 1},
-	{"op_concurrent_call", (int[1]) {1}, 1},
-	{"op_return", (int[1]) {0}, 0},
-	{"op_return_value", (int[1]) {0}, 0},
-
-	{"op_jump", (int[1]) {2}, 1},
-	{"op_jump_not_truthy", (int[1]) {2}, 1},
-
-	{"op_dot", (int[1]) {0}, 0},
-	{"op_define", (int[1]) {0}, 0},
-	{"op_get_global", (int[1]) {2}, 1},
-	{"op_set_global", (int[1]) {2}, 1},
-	{"op_get_local", (int[1]) {1}, 1},
-	{"op_set_local", (int[1]) {1}, 1},
-	{"op_get_builtin", (int[1]) {1}, 1},
-	{"op_get_free", (int[1]) {1}, 1},
-	{"op_load_module", (int[1]) {0}, 0},
-	{"op_interpolate", (int[2]) {2, 2}, 2},
-
-	{"op_pop", (int[1]) {0}, 0}
-};
+extern struct definition definitions[op_pop+1];
 
 int lookup_def(enum opcode op, struct definition *def);
 size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...);

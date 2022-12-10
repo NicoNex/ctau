@@ -11,7 +11,7 @@ int compile_return(struct node *n, struct compiler *c) {
 	return compiler_emit(c, op_return_value);
 }
 
-void dispose_return(struct node *n) {
+void dispose_return_node(struct node *n) {
 	struct return_node *r = n->data;
 	if (r->val != NULL) r->val->dispose(r->val);
 
@@ -23,6 +23,6 @@ struct node *new_return(struct node *val) {
 	struct return_node *r = malloc(sizeof(struct return_node));
 	r->val = val;
 
-	return new_node(r, return_node_t, compile_return, dispose_return);
+	return new_node(r, return_node_t, compile_return, dispose_return_node);
 }
 

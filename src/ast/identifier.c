@@ -11,12 +11,12 @@ int compile_identifier(struct node *n, struct compiler *c) {
 	return compiler_load_symbol(c, s);
 }
 
-void dispose_identifier(struct node *n) {
+void dispose_identifier_node(struct node *n) {
 	free(n->data);
 	free(n);
 }
 
 struct node *new_identifier(char *name) {
-	return new_node(name, identifier_node_t, compile_identifier, dispose_identifier);
+	return new_node(name, identifier_node_t, compile_identifier, dispose_identifier_node);
 }
 

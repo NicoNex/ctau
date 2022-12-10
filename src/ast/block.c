@@ -16,7 +16,7 @@ int compile_block(struct node *n, struct compiler *c) {
 	return pos;
 }
 
-void dispose_block(struct node *n) {
+void dispose_block_node(struct node *n) {
 	struct block_node *b = n->data;
 
 	for (int i = 0; i < b->len; i++) {
@@ -34,6 +34,6 @@ void block_add_statement(struct block_node *b, struct node *s) {
 
 struct node *new_block() {
 	struct block *b = calloc(1, sizeof(struct block_node));
-	return new_node(b, block_node_t, compile_block, dispose_block);
+	return new_node(b, block_node_t, compile_block, dispose_block_node);
 }
 

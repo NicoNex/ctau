@@ -34,7 +34,7 @@ int compile_ifelse(struct node *n, struct compiler *c) {
 	return compiler_pos(c);
 }
 
-void dispose_ifelse(struct node *n) {
+void dispose_ifelse_node(struct node *n) {
 	struct ifelse_node *i = n->data;
 	if (i->cond != NULL) i->cond->dispose(i->cond);
 	if (i->body != NULL) i->body->dispose(i->body);
@@ -50,6 +50,6 @@ struct node *new_ifelse(struct node *cond, struct node *body, struct node *alter
 	i->body = body;
 	i->altern = altern;
 
-	return new_node(i, ifelse_node_t, compile_ifelse, dispose_ifelse);
+	return new_node(i, ifelse_node_t, compile_ifelse, dispose_ifelse_node);
 }
 

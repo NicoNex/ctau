@@ -7,12 +7,12 @@ int compile_integer(struct node *n, struct compiler *c) {
 	return compiler_emit(c, op_constant, pos);
 }
 
-void dispose_integer(struct node *n) {
+void dispose_integer_node(struct node *n) {
 	free(n->data);
 	free(n);
 }
 
 struct node *new_integer(int64_t *val) {
-	return new_node(val, integer_node_t, compile_integer, dispose_integer);
+	return new_node(val, integer_node_t, compile_integer, dispose_integer_node);
 }
 

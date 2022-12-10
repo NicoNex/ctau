@@ -146,6 +146,7 @@ void compiler_replace_last_pop_with_return(struct compiler *c) {
 
 void compiler_enter_scope(struct compiler *c) {
 	c->scopes = realloc(c->scopes, sizeof(struct scope) * ++c->nscopes);
+	c->scope_index++;
 	c->scopes[c->nscopes-1] = (struct scope ) {0};
 	c->st = new_enclosed_symbol_table(c->st);
 }
@@ -154,6 +155,7 @@ uint8_t *compiler_leave_scope(struct compiler *c, size_t *len) {
 	uint8_t *insts = c->scopes[c->scope_index].insts;
 	*len = c->scopes[c->scope_index].ninsts;
 	c->scopes = realloc(c->scopes, sizeof(struct scope) * --c->nscopes);
+	c->scope_index--;
 	struct symbol_table *oldst = c->st;
 	c->st = c->st->outer;
 	symbol_table_free(oldst);

@@ -39,7 +39,7 @@ int compile_function(struct node *n, struct compiler *c) {
 	return compiler_emit(c, op_closure, fnpos, nfree);
 }
 
-void dispose_function(struct node *n) {
+void dispose_function_node(struct node *n) {
 	struct function_node *f = n->data;
 
 	if (f->body != NULL) f->body->dispose(f->body);
@@ -59,6 +59,6 @@ struct node *new_function(char **params, size_t nparams, struct node *body) {
 	f->params = params;
 	f->nparams = nparams;
 
-	return new_node(f, function_node_t, compile_function, dispose_function);
+	return new_node(f, function_node_t, compile_function, dispose_function_node);
 }
 
