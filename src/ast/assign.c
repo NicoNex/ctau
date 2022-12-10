@@ -7,7 +7,6 @@ struct assign {
 
 int compile_assign(struct node *n, struct compiler *c) {
 	struct assign *a = n->data;
-	int pos = 0;
 
 	switch (a->l->type) {
 	case identifier_node_t: {
