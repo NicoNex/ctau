@@ -1,3 +1,6 @@
+#ifndef JUMP_TABLE_H_INCLUDED
+#define JUMP_TABLE_H_INCLUDED
+
 static void *jump_table[] = {
 	&&TARGET_CONST,
 	&&TARGET_TRUE,
@@ -53,4 +56,7 @@ static void *jump_table[] = {
 
 	&&TARGET_POP
 };
+
+
+#endif // JUMP_TABLE_H_INCLUDED
 

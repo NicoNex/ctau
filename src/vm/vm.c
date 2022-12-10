@@ -7,9 +7,12 @@
 #define DISPATCH() goto *jump_table[*frame->ip]
 
 #define vm_current_frame(vm) (&vm->frames[vm->frame_idx])
+#define vm_push_frame(vm, frame) vm->frames[vm->frame_idx++] = frame
+#define vm_pop_frame(vm) (&vm->frames[--vm->frame_idx])
 #define vm_stack_push(vm, obj) vm->stack[vm->sp++] = obj
 #define vm_stack_pop(vm) (vm->stack[--vm->sp])
-#define vm_stack_pop_ignore(vm) vm->sp -= 1;
+#define vm_stack_pop_ignore(vm) vm->sp -= 1
+#define vm_stack_peek(vm) (vm->stack[vm->sp-1])
 #define vm_stack_cur(vm) (vm->stack[vm->sp - 1])
 
 #define UNHANDLED() puts("unhandled opcode"); return -1
@@ -135,6 +138,47 @@ static inline void vm_exec_greater_than(struct vm * restrict vm) {
 
 	puts("unsupported operator '>' for the two types");
 	exit(1);
+}
+
+static inline void vm_call_closure(struct vm * restrict vm, struct object *cl, size_t numargs) {
+	int num_params = cl->data.cl->fn->num_params;
+
+	if (num_params != numargs) {
+		printf("wrong number of arguments: expected %d, got %lu\n", num_params, numargs);
+		exit(1);
+	}
+
+	struct frame frame = new_frame(cl, vm->sp-numargs);
+	vm_push_frame(vm, frame);
+	vm->sp = frame.base_ptr + cl->data.cl->fn->num_locals;
+}
+
+static inline void vm_exec_call(struct vm * restrict vm, size_t numargs) {
+	struct object *o = unwrap(vm->stack[vm->sp-1-numargs]);
+
+	switch (o->type) {
+	case obj_closure:
+		return vm_call_closure(vm, o, numargs);
+	case obj_builtin:
+		puts("calling builtins is not yet supported");
+		exit(1);
+	default:
+		puts("calling non-function");
+		exit(1);
+	}
+}
+
+static inline void vm_exec_return(struct vm * restrict vm) {
+	struct frame *frame = vm_pop_frame(vm);
+	vm->sp = frame->base_ptr - 1;
+	vm_stack_push(vm, null_obj);
+}
+
+static inline void vm_exec_return_value(struct vm * restrict vm) {
+	struct object *o = unwrap(vm_stack_pop(vm));
+	struct frame *frame = vm_pop_frame(vm);
+	vm->sp = frame->base_ptr - 1;
+	vm_stack_push(vm, null_obj);
 }
 
 int vm_run(struct vm * restrict vm) {
@@ -297,7 +341,8 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_CALL: {
-
+		uint8_t num_args = read_uint8(frame->ip++);
+		vm_exec_call(vm, num_args);
 		DISPATCH();
 	}
 
@@ -307,12 +352,12 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_RETURN: {
-
+		vm_exec_return(vm);
 		DISPATCH();
 	}
 
 	TARGET_RETURN_VALUE: {
-
+		vm_exec_return_value(vm);
 		DISPATCH();
 	}
 
@@ -334,27 +379,37 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_DEFINE: {
-
+		UNHANDLED();
 		DISPATCH();
 	}
 
 	TARGET_GET_GLOBAL: {
-
+		int global_idx = read_uint16(vm_current_frame(vm)->ip);
+		vm_current_frame(vm)->ip += 2;
+		vm_stack_push(vm, vm->state.globals[global_idx]);
 		DISPATCH();
 	}
 
 	TARGET_SET_GLOBAL: {
-
+		int global_idx = read_uint16(vm_current_frame(vm)->ip+1);
+		vm_current_frame(vm)->ip += 2;
+		vm->state.globals[global_idx] = vm_stack_peek(vm);
 		DISPATCH();
 	}
 
 	TARGET_GET_LOCAL: {
-
+		int local_idx = read_uint8(vm_current_frame(vm)->ip);
+		vm_current_frame(vm)->ip++;
+		struct frame *frame = vm_current_frame(vm);
+		vm_stack_push(vm, vm->stack[frame->base_ptr+local_idx]);
 		DISPATCH();
 	}
 
 	TARGET_SET_LOCAL: {
-
+		int local_idx = read_uint8(vm_current_frame(vm)->ip);
+		vm_current_frame(vm)->ip++;
+		struct frame *frame = vm_current_frame(vm);
+		vm->stack[frame->base_ptr+local_idx] = vm_stack_peek(vm);
 		DISPATCH();
 	}
 
@@ -364,7 +419,10 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_FREE: {
-
+		int free_idx = read_uint8(vm_current_frame(vm)->ip);
+		vm_current_frame(vm)->ip++;
+		struct object *cl = vm_current_frame(vm)->cl;
+		vm_stack_push(vm, cl->data.cl->free[free_idx]);
 		DISPATCH();
 	}
 
