@@ -64,7 +64,7 @@ struct object *new_integer_obj(uint64_t val);
 struct object *new_float_obj(double val);
 struct object *parse_bool(int b);
 
-void dummy_dispose(struct object *o) {}
+void dummy_dispose(struct object *o);
 
 object *true_obj = &(struct object) {
     .data.i = 1,

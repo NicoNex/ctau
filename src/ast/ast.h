@@ -8,6 +8,8 @@
 
 #define CHECK(pos) if ((pos) == -1) return -1
 
+struct compiler;
+
 enum node_type {
 	plus_node_t,
 	minus_node_t,
