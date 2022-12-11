@@ -32,7 +32,6 @@ struct state new_state() {
 
 struct vm *new_vm(struct bytecode bytecode) {
 	struct vm *vm = calloc(1, sizeof(struct vm));
-	vm->frame_idx = 1;
 	vm->state.consts = bytecode.consts;
 
 	struct object *fn = new_function_obj(bytecode.insts, bytecode.ninsts, 0, 0);

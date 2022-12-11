@@ -211,6 +211,7 @@ struct compiler *new_compiler_with_state(struct symbol_table *st, struct object 
 	c->consts = consts;
 	c->scopes = malloc(sizeof(struct scope));
 	c->scopes[0] = (struct scope) {0};
+	c->nscopes = 1;
 
 	return c;
 }
@@ -220,6 +221,7 @@ struct compiler *new_compiler() {
 	c->st = new_symbol_table();
 	c->scopes = malloc(sizeof(struct scope));
 	c->scopes[0] = (struct scope) {0};
+	c->nscopes = 1;
 
 	//TODO: define builtins.
 	return c;
