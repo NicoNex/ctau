@@ -25,8 +25,6 @@ static inline void put_uint32(uint8_t *code, uint32_t i) {
 	code[3] = i & 0xff;
 }
 
-#include <stdio.h>
-
 // Returns the resulting bytecode from parsing the instruction.
 size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...) {
 	struct definition def;
