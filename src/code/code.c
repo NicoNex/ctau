@@ -78,15 +78,15 @@ size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...) {
 	return code_len;
 }
 
-uint8_t read_uint8(uint8_t *ins) {
+inline uint8_t read_uint8(uint8_t *ins) {
 	return ins[0];
 }
 
-uint16_t read_uint16(uint8_t *ins) {
+inline uint16_t read_uint16(uint8_t *ins) {
 	return (ins[0] << 8) | ins[1];
 }
 
-uint32_t read_uint32(uint8_t *ins) {
+inline uint32_t read_uint32(uint8_t *ins) {
 	return (ins[0] << 24) | (ins[1] << 16) | (ins[2] << 8) | ins[3];
 }
 

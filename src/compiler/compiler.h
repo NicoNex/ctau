@@ -91,4 +91,3 @@ struct symbol *symbol_table_define(struct symbol_table *s, char *name);
 struct symbol *symbol_table_resolve(struct symbol_table *s, char *name);
 
 #endif
-
