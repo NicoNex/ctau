@@ -8,13 +8,13 @@
 #define DISPATCH() goto *jump_table[*frame->ip]
 
 #define vm_current_frame(vm) (&vm->frames[vm->frame_idx])
-#define vm_push_frame(vm, frame) vm->frames[vm->frame_idx++] = frame
-#define vm_pop_frame(vm) (&vm->frames[--vm->frame_idx])
+#define vm_push_frame(vm, frame) vm->frames[++vm->frame_idx] = frame
+#define vm_pop_frame(vm) (&vm->frames[vm->frame_idx--])
+
 #define vm_stack_push(vm, obj) vm->stack[vm->sp++] = obj
 #define vm_stack_pop(vm) (vm->stack[--vm->sp])
-#define vm_stack_pop_ignore(vm) vm->sp -= 1
+#define vm_stack_pop_ignore(vm) vm->sp--
 #define vm_stack_peek(vm) (vm->stack[vm->sp-1])
-#define vm_stack_cur(vm) (vm->stack[vm->sp - 1])
 
 #define UNHANDLED() puts("unhandled opcode"); return -1
 
