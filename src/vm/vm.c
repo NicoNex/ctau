@@ -5,7 +5,7 @@
 #include "../obj/obj.h"
 #include "../code/code.h"
 
-#define DISPATCH() goto *jump_table[*frame->ip]
+#define DISPATCH() goto *jump_table[*frame->ip++]
 
 #define vm_current_frame(vm) (&vm->frames[vm->frame_idx])
 #define vm_push_frame(vm, frame) vm->frames[++vm->frame_idx] = frame
@@ -189,26 +189,23 @@ int vm_run(struct vm * restrict vm) {
 
 	TARGET_CONST: {
 		uint16_t idx = read_uint16(frame->ip + 1);
-		frame->ip += 3;
+		frame->ip += 2;
 		vm_stack_push(vm, vm->state.consts[idx]);
 		DISPATCH();
 	}
 
 	TARGET_TRUE: {
 		vm_stack_push(vm, true_obj);
-		frame->ip++;
 		DISPATCH();
 	}
 
 	TARGET_FALSE: {
 		vm_stack_push(vm, false_obj);
-		frame->ip++;
 		DISPATCH();
 	}
 
 	TARGET_NULL: {
 		vm_stack_push(vm, null_obj);
-		frame->ip++;
 		DISPATCH();
 	}
 
@@ -341,7 +338,7 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_CALL: {
-		uint8_t num_args = read_uint8(frame->ip++);
+		uint8_t num_args = read_uint8(++frame->ip);
 		vm_exec_call(vm, num_args);
 		DISPATCH();
 	}
