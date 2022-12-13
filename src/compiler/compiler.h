@@ -41,7 +41,7 @@ struct emitted_inst {
 
 struct scope {
 	uint8_t *insts;
-	size_t ninsts;
+	size_t len;
 	struct emitted_inst last_inst;
 	struct emitted_inst prev_inst;
 };
@@ -58,7 +58,7 @@ struct compiler {
 struct bytecode {
 	uint8_t *insts;
 	struct object **consts;
-	size_t ninsts;
+	size_t len;
 	size_t nconsts;
 };
 

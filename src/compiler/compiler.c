@@ -5,15 +5,15 @@
 
 int compiler_add_inst(struct compiler *c, uint8_t *ins, size_t len) {
 	struct scope *scope = &c->scopes[c->nscopes-1];
-	int offset = scope->ninsts;
-	scope->ninsts += len;
-	scope->insts = realloc(scope->insts, sizeof(uint8_t) * scope->ninsts);
+	int offset = scope->len;
+	scope->len += len;
+	scope->insts = realloc(scope->insts, sizeof(uint8_t) * scope->len);
 
-	for (int i = offset; i < scope->ninsts; i++) {
+	for (int i = offset; i < scope->len; i++) {
 		scope->insts[i] = ins[i % offset];
 	}
 
-	return scope->ninsts;
+	return scope->len;
 }
 
 int compiler_add_const(struct compiler *c, struct object *o) {
@@ -29,21 +29,23 @@ void compiler_set_last_inst(struct compiler *c, enum opcode op, int pos) {
 }
 
 int compiler_emit(struct compiler *c, enum opcode op, ...) {
-	uint8_t **code = &c->scopes[c->scope_index].insts;
-	size_t len = c->scopes[c->scope_index].ninsts;
+	struct scope *scope = &c->scopes[c->scope_index];
+	uint8_t **code = &scope->insts;
+	size_t len = scope->len;
 
 	va_list args;
 	va_start(args, op);
 	int pos = vmake_bcode(code, len, op, args);
 	va_end(args);
 	compiler_set_last_inst(c, op, pos);
+	scope->len = pos;
 
 	return pos;
 }
 
 int compiler_last_is(struct compiler *c, uint8_t op) {
 	struct scope scope = c->scopes[c->scope_index];
-	return scope.ninsts != 0 && scope.last_inst.opcode == op;
+	return scope.len != 0 && scope.last_inst.opcode == op;
 }
 
 void compiler_remove_last(struct compiler *c) {
@@ -51,7 +53,7 @@ void compiler_remove_last(struct compiler *c) {
 	struct emitted_inst prev = c->scopes[c->scope_index].prev_inst;
 
 	uint8_t **old = &c->scopes[c->scope_index].insts;
-	c->scopes[c->scope_index].ninsts = last.position;
+	c->scopes[c->scope_index].len = last.position;
 	*old = realloc(*old, sizeof(uint8_t) * last.position);
 	c->scopes[c->scope_index].last_inst = prev;
 }
@@ -74,7 +76,7 @@ void compiler_replace_operand(struct compiler *c, int op_pos, int operand) {
 
 int compiler_replace_continue_operand(struct compiler *c, int start, int end, int operand) {
 	uint8_t *insts = c->scopes[c->scope_index].insts;
-	size_t len = c->scopes[c->scope_index].ninsts;
+	size_t len = c->scopes[c->scope_index].len;
 
 	if (start > len || end > len) {
 		puts("compiler error: start or end position out of range");
@@ -106,7 +108,7 @@ int compiler_replace_continue_operand(struct compiler *c, int start, int end, in
 
 int compiler_replace_break_operand(struct compiler *c, int start, int end, int operand) {
 	uint8_t *insts = c->scopes[c->scope_index].insts;
-	size_t len = c->scopes[c->scope_index].ninsts;
+	size_t len = c->scopes[c->scope_index].len;
 
 	if (start > len || end > len) {
 		puts("compiler error: start or end position out of range");
@@ -154,7 +156,7 @@ void compiler_enter_scope(struct compiler *c) {
 
 uint8_t *compiler_leave_scope(struct compiler *c, size_t *len) {
 	uint8_t *insts = c->scopes[c->scope_index].insts;
-	*len = c->scopes[c->scope_index].ninsts;
+	*len = c->scopes[c->scope_index].len;
 	c->scopes = realloc(c->scopes, sizeof(struct scope) * --c->nscopes);
 	c->scope_index--;
 	struct symbol_table *oldst = c->st;
@@ -165,7 +167,7 @@ uint8_t *compiler_leave_scope(struct compiler *c, size_t *len) {
 }
 
 int compiler_pos(struct compiler *c) {
-	return c->scopes[c->scope_index].ninsts;
+	return c->scopes[c->scope_index].len;
 }
 
 int compile(struct compiler *c, struct node *tree) {
@@ -201,7 +203,7 @@ struct bytecode compiler_bytecode(struct compiler *c) {
 	return (struct bytecode) {
 		.insts = c->scopes[c->scope_index].insts,
 		.consts = c->consts,
-		.ninsts = c->scopes[c->scope_index].ninsts,
+		.len = c->scopes[c->scope_index].len,
 		.nconsts = c->nconsts
 	};
 }
