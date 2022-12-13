@@ -77,4 +77,3 @@ size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...);
 int read_operands(struct definition def, uint8_t *ins, int **operands);
 
 #endif
-
