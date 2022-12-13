@@ -1,5 +1,5 @@
-#ifndef JUMP_TABLE_H_INCLUDED
-#define JUMP_TABLE_H_INCLUDED
+#ifndef JUMP_TABLE_H_
+#define JUMP_TABLE_H_
 
 static void *jump_table[] = {
 	&&TARGET_CONST,
@@ -58,5 +58,5 @@ static void *jump_table[] = {
 };
 
 
-#endif // JUMP_TABLE_H_INCLUDED
+#endif // JUMP_TABLE_H_
 

@@ -5,8 +5,6 @@
 #include "../obj/obj.h"
 #include "../code/code.h"
 
-#define DISPATCH() goto *jump_table[*frame->ip++]
-
 #define vm_current_frame(vm) (&vm->frames[vm->frame_idx])
 #define vm_push_frame(vm, frame) vm->frames[++vm->frame_idx] = frame
 #define vm_pop_frame(vm) (&vm->frames[vm->frame_idx--])
@@ -16,6 +14,7 @@
 #define vm_stack_pop_ignore(vm) vm->sp--
 #define vm_stack_peek(vm) (vm->stack[vm->sp-1])
 
+#define DISPATCH() goto *jump_table[*frame->ip++]
 #define UNHANDLED() puts("unhandled opcode"); return -1
 
 static inline struct frame new_frame(struct object *cl, uint32_t base_ptr) {
@@ -220,8 +219,8 @@ int vm_run(struct vm * restrict vm) {
 
 	TARGET_CLOSURE: {
 		uint16_t const_idx = read_uint16(frame->ip);
-		uint8_t num_free = read_uint8(frame->ip+2);
-		frame->ip += 2;
+		uint8_t num_free = read_uint8(frame->ip+3);
+		frame->ip += 3;
 		vm_push_closure(vm, const_idx, num_free);
 		DISPATCH();
 	}
@@ -339,6 +338,7 @@ int vm_run(struct vm * restrict vm) {
 	TARGET_CALL: {
 		uint8_t num_args = read_uint8(frame->ip++);
 		vm_exec_call(vm, num_args);
+		frame = vm_current_frame(vm);
 		DISPATCH();
 	}
 
@@ -349,11 +349,13 @@ int vm_run(struct vm * restrict vm) {
 
 	TARGET_RETURN: {
 		vm_exec_return(vm);
+		frame = vm_current_frame(vm);
 		DISPATCH();
 	}
 
 	TARGET_RETURN_VALUE: {
 		vm_exec_return_value(vm);
+		frame = vm_current_frame(vm);
 		DISPATCH();
 	}
 
@@ -380,29 +382,27 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_GLOBAL: {
-		int global_idx = read_uint16(vm_current_frame(vm)->ip);
-		vm_current_frame(vm)->ip += 2;
+		int global_idx = read_uint16(frame->ip);
+		frame->ip += 2;
 		vm_stack_push(vm, vm->state.globals[global_idx]);
 		DISPATCH();
 	}
 
 	TARGET_SET_GLOBAL: {
-		int global_idx = read_uint16(vm_current_frame(vm)->ip);
-		vm_current_frame(vm)->ip += 2;
+		int global_idx = read_uint16(frame->ip);
+		frame->ip += 2;
 		vm->state.globals[global_idx] = vm_stack_peek(vm);
 		DISPATCH();
 	}
 
 	TARGET_GET_LOCAL: {
-		int local_idx = read_uint8(vm_current_frame(vm)->ip++);
-		struct frame *frame = vm_current_frame(vm);
+		int local_idx = read_uint8(frame->ip++);
 		vm_stack_push(vm, vm->stack[frame->base_ptr+local_idx]);
 		DISPATCH();
 	}
 
 	TARGET_SET_LOCAL: {
 		int local_idx = read_uint8(vm_current_frame(vm)->ip++);
-		struct frame *frame = vm_current_frame(vm);
 		vm->stack[frame->base_ptr+local_idx] = vm_stack_peek(vm);
 		DISPATCH();
 	}
@@ -413,8 +413,8 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_FREE: {
-		int free_idx = read_uint8(vm_current_frame(vm)->ip++);
-		struct object *cl = vm_current_frame(vm)->cl;
+		int free_idx = read_uint8(frame->ip++);
+		struct object *cl = frame->cl;
 		vm_stack_push(vm, cl->data.cl->free[free_idx]);
 		DISPATCH();
 	}
