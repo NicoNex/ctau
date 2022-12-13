@@ -4,10 +4,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define read_uint8(ins) (ins[0])
-#define read_uint16(ins) ((ins[0] << 8) | ins[1])
-#define read_uint32(ins) ((ins[0] << 24) | (ins[1] << 16) | (ins[2] << 8) | ins[3])
-
 enum opcode {
 	op_constant,
 	op_true,
