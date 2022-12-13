@@ -34,7 +34,8 @@ int compiler_emit(struct compiler *c, enum opcode op, ...) {
 
 	va_list args;
 	va_start(args, op);
-	int pos = make_bcode(code, len, op, args);
+	int pos = vmake_bcode(code, len, op, args);
+	va_end(args);
 	compiler_set_last_inst(c, op, pos);
 
 	return pos;

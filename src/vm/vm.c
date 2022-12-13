@@ -188,8 +188,7 @@ int vm_run(struct vm * restrict vm) {
 	DISPATCH();
 
 	TARGET_CONST: {
-		uint16_t idx = read_uint16(frame->ip + 1);
-		frame->ip += 2;
+		uint16_t idx = read_uint16(frame->ip++);
 		vm_stack_push(vm, vm->state.consts[idx]);
 		DISPATCH();
 	}
@@ -220,9 +219,9 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_CLOSURE: {
-		uint16_t const_idx = read_uint16(frame->ip+1);
-		uint8_t num_free = read_uint8(frame->ip+3);
-		frame->ip += 3;
+		uint16_t const_idx = read_uint16(frame->ip);
+		uint8_t num_free = read_uint8(frame->ip+2);
+		frame->ip += 2;
 		vm_push_closure(vm, const_idx, num_free);
 		DISPATCH();
 	}
@@ -338,7 +337,7 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_CALL: {
-		uint8_t num_args = read_uint8(++frame->ip);
+		uint8_t num_args = read_uint8(frame->ip++);
 		vm_exec_call(vm, num_args);
 		DISPATCH();
 	}
@@ -388,23 +387,21 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_SET_GLOBAL: {
-		int global_idx = read_uint16(vm_current_frame(vm)->ip+1);
+		int global_idx = read_uint16(vm_current_frame(vm)->ip);
 		vm_current_frame(vm)->ip += 2;
 		vm->state.globals[global_idx] = vm_stack_peek(vm);
 		DISPATCH();
 	}
 
 	TARGET_GET_LOCAL: {
-		int local_idx = read_uint8(vm_current_frame(vm)->ip);
-		vm_current_frame(vm)->ip++;
+		int local_idx = read_uint8(vm_current_frame(vm)->ip++);
 		struct frame *frame = vm_current_frame(vm);
 		vm_stack_push(vm, vm->stack[frame->base_ptr+local_idx]);
 		DISPATCH();
 	}
 
 	TARGET_SET_LOCAL: {
-		int local_idx = read_uint8(vm_current_frame(vm)->ip);
-		vm_current_frame(vm)->ip++;
+		int local_idx = read_uint8(vm_current_frame(vm)->ip++);
 		struct frame *frame = vm_current_frame(vm);
 		vm->stack[frame->base_ptr+local_idx] = vm_stack_peek(vm);
 		DISPATCH();
@@ -416,8 +413,7 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_FREE: {
-		int free_idx = read_uint8(vm_current_frame(vm)->ip);
-		vm_current_frame(vm)->ip++;
+		int free_idx = read_uint8(vm_current_frame(vm)->ip++);
 		struct object *cl = vm_current_frame(vm)->cl;
 		vm_stack_push(vm, cl->data.cl->free[free_idx]);
 		DISPATCH();
