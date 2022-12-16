@@ -41,7 +41,8 @@ size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...) {
 	int offset = code_len;
 	code_len += sizeof(uint8_t) * ins_len;
 	*code = realloc(*code, code_len);
-	*code[offset++] = op;
+	uint8_t *bcode = *code;
+	bcode[offset++] = op;
 
 	va_list operands;
 	va_start(operands, op);
@@ -49,7 +50,6 @@ size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...) {
 	for (int i = 0; i < def.noperands; i++) {
 		int width = def.opwidths[i];
 
-		uint8_t *bcode = *code;
 		switch (width) {
 			case 1: {
 				uint8_t operand = va_arg(operands, uint32_t);
