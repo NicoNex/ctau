@@ -65,7 +65,7 @@ static inline struct object *unwrap(struct object *o) {
 	return o;
 }
 
-static inline int assert_types(struct object *o, size_t n, ...) {
+static inline int assert(struct object *o, size_t n, ...) {
 	va_list ptr;
 	va_start(ptr, n);
 	register enum obj_type type = o->type;
@@ -83,14 +83,13 @@ static inline void vm_exec_add(struct vm * restrict vm) {
 	struct object *right = unwrap(vm_stack_pop(vm));
 	struct object *left = unwrap(vm_stack_pop(vm));
 
-	if (assert_types(left, 1, obj_integer) && assert_types(right, 1, obj_integer)) {
+	if (assert(left, 1, obj_integer) && assert(right, 1, obj_integer)) {
 		vm_stack_push(vm, new_integer_obj(left->data.i + right->data.i));
-	} else if (assert_types(left, 2, obj_integer, obj_float)
-			   && assert_types(right, 2, obj_integer, obj_float)) {
+	} else if (assert(left, 2, obj_integer, obj_float) && assert(right, 2, obj_integer, obj_float)) {
 		puts("adding two floats is not yet supported!");
 		exit(1);
 		vm_stack_push(vm, new_float_obj(left->data.f + right->data.f));
-	} else if (assert_types(left, 1, obj_string) && assert_types(right, 1, obj_string)) {
+	} else if (assert(left, 1, obj_string) && assert(right, 1, obj_string)) {
 		puts("adding two strings is not yet supported!");
 		exit(1);
 	}
@@ -103,14 +102,13 @@ static inline void vm_exec_sub(struct vm * restrict vm) {
 	struct object *right = unwrap(vm_stack_pop(vm));
 	struct object *left = unwrap(vm_stack_pop(vm));
 
-	if (assert_types(left, 1, obj_integer) && assert_types(right, 1, obj_integer)) {
+	if (assert(left, 1, obj_integer) && assert(right, 1, obj_integer)) {
 		vm_stack_push(vm, new_integer_obj(left->data.i - right->data.i));
-	} else if (assert_types(left, 2, obj_integer, obj_float)
-			   && assert_types(right, 2, obj_integer, obj_float)) {
+	} else if (assert(left, 2, obj_integer, obj_float)  && assert(right, 2, obj_integer, obj_float)) {
 		puts("subtracting two floats is not yet supported");
 		exit(1);
 		vm_stack_push(vm, new_float_obj(left->data.f - right->data.f));
-	} else if (assert_types(left, 1, obj_string) && assert_types(right, 1, obj_string)) {
+	} else if (assert(left, 1, obj_string) && assert(right, 1, obj_string)) {
 		puts("subtracting two strings is not yet supported");
 		exit(1);
 	}
@@ -123,14 +121,13 @@ static inline void vm_exec_greater_than(struct vm * restrict vm) {
 	struct object *right = unwrap(vm_stack_pop(vm));
 	struct object *left = unwrap(vm_stack_pop(vm));
 
-	if (assert_types(left, 1, obj_integer) && assert_types(right, 1, obj_integer)) {
+	if (assert(left, 1, obj_integer) && assert(right, 1, obj_integer)) {
 		vm_stack_push(vm, parse_bool(left->data.i > right->data.i));
-	} else if (assert_types(left, 2, obj_integer, obj_float)
-			   && assert_types(right, 2, obj_integer, obj_float)) {
+	} else if (assert(left, 2, obj_integer, obj_float) && assert(right, 2, obj_integer, obj_float)) {
 		puts("comparing two floats is not yet supported");
 		exit(1);
 		vm_stack_push(vm, parse_bool(left->data.f > right->data.f));
-	} else if (assert_types(left, 1, obj_string) && assert_types(right, 1, obj_string)) {
+	} else if (assert(left, 1, obj_string) && assert(right, 1, obj_string)) {
 		puts("comparing two strings is not yet supported");
 		exit(1);
 	}
@@ -189,7 +186,7 @@ int vm_run(struct vm * restrict vm) {
 	TARGET_CONST: {
 		puts("TARGET_CONST");
 		uint16_t idx = read_uint16(frame->ip);
-		frame->ip += 3;
+		frame->ip += 2;
 		vm_stack_push(vm, vm->state.consts[idx]);
 		DISPATCH();
 	}

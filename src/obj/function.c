@@ -6,7 +6,7 @@ static void dispose_function_obj(struct object *o) {
 	free(o);
 }
 
-struct object *new_function_obj(uint8_t *insts, size_t len, int num_locals, int num_params) {
+struct object *new_function_obj(uint8_t *insts, size_t len, int num_params, int num_locals) {
 	struct function *fn = malloc(sizeof(struct function));
 	fn->instructions = insts;
 	fn->len = len;
