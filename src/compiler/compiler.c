@@ -17,7 +17,9 @@ int compiler_add_inst(struct compiler *c, uint8_t *ins, size_t len) {
 }
 
 int compiler_add_const(struct compiler *c, struct object *o) {
+	int pos = c->nconsts;
 	c->consts = realloc(c->consts, sizeof(struct object *) * ++c->nconsts);
+	c->consts[pos] = o;
 	return c->nconsts - 1;
 }
 
