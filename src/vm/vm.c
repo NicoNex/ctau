@@ -33,7 +33,7 @@ struct vm *new_vm(struct bytecode bytecode) {
 	struct vm *vm = calloc(1, sizeof(struct vm));
 	vm->state.consts = bytecode.consts;
 
-	struct object *fn = new_function_obj(bytecode.insts, bytecode.ninsts, 0, 0);
+	struct object *fn = new_function_obj(bytecode.insts, bytecode.len, 0, 0);
 	struct object *cl = new_closure_obj(fn->data.fn, NULL, 0);
 	vm->frames[0] = new_frame(cl, 0);
 
@@ -44,7 +44,7 @@ static inline void vm_push_closure(struct vm *restrict vm, uint32_t const_idx, u
 	struct object *cnst = vm->state.consts[const_idx];
 
 	if (cnst->type != obj_function) {
-		puts("vm_push_closure: expected closure");
+		printf("vm_push_closure: expected closure, but got %d\n", cnst->type);
 		exit(1);
 	}
 	
@@ -187,7 +187,9 @@ int vm_run(struct vm * restrict vm) {
 	DISPATCH();
 
 	TARGET_CONST: {
-		uint16_t idx = read_uint16(frame->ip++);
+		puts("TARGET_CONST");
+		uint16_t idx = read_uint16(frame->ip);
+		frame->ip += 3;
 		vm_stack_push(vm, vm->state.consts[idx]);
 		DISPATCH();
 	}
@@ -218,14 +220,16 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_CLOSURE: {
+		puts("TARGET_CLOSURE");
 		uint16_t const_idx = read_uint16(frame->ip);
-		uint8_t num_free = read_uint8(frame->ip+3);
+		uint8_t num_free = read_uint8(frame->ip+2);
 		frame->ip += 3;
 		vm_push_closure(vm, const_idx, num_free);
 		DISPATCH();
 	}
 
 	TARGET_CURRENT_CLOSURE: {
+		puts("TARGET_CURRENT_CLOSURE");
 		vm_stack_push(vm, frame->cl);
 		DISPATCH();
 	}
@@ -336,6 +340,7 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_CALL: {
+		puts("TARGET_CALL");
 		uint8_t num_args = read_uint8(frame->ip++);
 		vm_exec_call(vm, num_args);
 		frame = vm_current_frame(vm);
@@ -382,6 +387,7 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_GLOBAL: {
+		puts("TARGET_GET_GLOBAL");
 		int global_idx = read_uint16(frame->ip);
 		frame->ip += 2;
 		vm_stack_push(vm, vm->state.globals[global_idx]);
@@ -389,6 +395,7 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_SET_GLOBAL: {
+		puts("TARGET_SET_GLOBAL");
 		int global_idx = read_uint16(frame->ip);
 		frame->ip += 2;
 		vm->state.globals[global_idx] = vm_stack_peek(vm);
@@ -396,13 +403,15 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_LOCAL: {
+		puts("TARGET_GET_LOCAL");
 		int local_idx = read_uint8(frame->ip++);
 		vm_stack_push(vm, vm->stack[frame->base_ptr+local_idx]);
 		DISPATCH();
 	}
 
 	TARGET_SET_LOCAL: {
-		int local_idx = read_uint8(vm_current_frame(vm)->ip++);
+		puts("TARGET_SET_LOCAL");
+		int local_idx = read_uint8(frame->ip++);
 		vm->stack[frame->base_ptr+local_idx] = vm_stack_peek(vm);
 		DISPATCH();
 	}
