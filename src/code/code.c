@@ -24,59 +24,6 @@ static inline void put_uint32(uint8_t *code, uint32_t i) {
 	code[3] = i & 0xff;
 }
 
-// Returns the resulting bytecode from parsing the instruction.
-size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...) {
-	struct definition def;
-
-	if (!lookup_def(op, &def)) {
-		return code_len;
-	}
-
-	int ins_len = 1;
-
-	for (int i = 0; i < def.noperands; i++) {
-		ins_len += def.opwidths[i];
-	}
-
-	int offset = code_len;
-	code_len += sizeof(uint8_t) * ins_len;
-	*code = realloc(*code, code_len);
-	uint8_t *bcode = *code;
-	bcode[offset++] = op;
-
-	va_list operands;
-	va_start(operands, op);
-
-	for (int i = 0; i < def.noperands; i++) {
-		int width = def.opwidths[i];
-
-		switch (width) {
-			case 1: {
-				uint8_t operand = va_arg(operands, uint32_t);
-				bcode[offset] = operand;
-				break;
-			}
-
-			case 2: {
-				uint16_t operand = va_arg(operands, uint32_t);
-				put_uint16(&bcode[offset], operand);
-				break;
-			}
-
-			case 4: {
-				uint32_t operand = va_arg(operands, uint32_t);
-				put_uint32(&bcode[offset], operand);
-				break;
-			}
-		}
-
-		offset += width;
-	}
-
-	va_end(operands);
-	return code_len;
-}
-
 size_t vmake_bcode(uint8_t **code, size_t code_len, enum opcode op, va_list operands) {
 	struct definition def;
 
@@ -123,6 +70,16 @@ size_t vmake_bcode(uint8_t **code, size_t code_len, enum opcode op, va_list oper
 	}
 
 	return code_len;
+}
+
+// Returns the resulting bytecode from parsing the instruction.
+size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...) {
+	va_list args;
+	va_start(args, op);
+	int pos = vmake_bcode(code, code_len, op, args);
+	va_end(args);
+
+	return pos;
 }
 
 inline uint8_t read_uint8(uint8_t *ins) {
