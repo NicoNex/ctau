@@ -62,6 +62,9 @@ struct bytecode {
 	size_t nconsts;
 };
 
+struct node;
+
+int compile(struct compiler *c, struct node *tree);
 int compiler_add_inst(struct compiler *c, uint8_t *ins, size_t len);
 int compiler_add_const(struct compiler *c, struct object *o);
 void compiler_set_last_inst(struct compiler *c, enum opcode op, int pos);

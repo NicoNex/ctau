@@ -19,7 +19,7 @@ fib(35)";
 
 	struct node *tree = parse_input(code, strlen(code));
 	struct compiler *c = new_compiler();
-	tree->compile(tree, c);
+	compile(c, tree);
 	struct vm *vm = new_vm(compiler_bytecode(c));
 	vm_run(vm);
 
