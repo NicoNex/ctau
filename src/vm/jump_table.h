@@ -54,7 +54,8 @@ static void *jump_table[] = {
 	&&TARGET_LOAD_MODULE,
 	&&TARGET_INTERPOLATE,
 
-	&&TARGET_POP
+	&&TARGET_POP,
+	&&TARGET_HALT
 };
 
 

@@ -173,7 +173,8 @@ int compiler_pos(struct compiler *c) {
 }
 
 int compile(struct compiler *c, struct node *tree) {
-	return tree->compile(tree, c);
+	tree->compile(tree, c);
+	return compiler_emit(c, op_halt);
 }
 
 struct symbol *compiler_define(struct compiler *c, char *name) {

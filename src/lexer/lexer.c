@@ -39,12 +39,12 @@ static inline int cur(struct lexer *l) {
 	return next(l);
 }
 
-static inline int index_char(const char *valid, const char c) {
-	return strchr(valid, c) - valid;
+static inline int contains(const char *valid, const char c) {
+	return strchr(valid, c) != NULL;
 }
 
 static inline int accept(struct lexer *l, char *valid) {
-	if (index_char(valid, next(l)) >= 0) {
+	if (l->pos < l->len && contains(valid, next(l))) {
 		return 1;
 	}
 	backup(l);
@@ -54,7 +54,7 @@ static inline int accept(struct lexer *l, char *valid) {
 static inline void accept_run(struct lexer *l, char *valid) {
 	int c = next(l);
 
-	while (c != eof && index_char(valid, c) >= 0) {
+	while (c != eof && contains(valid, c)) {
 		c = next(l);
 	}
 

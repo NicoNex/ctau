@@ -58,7 +58,8 @@ enum opcode {
 	op_load_module,
 	op_interpolate,
 
-	op_pop
+	op_pop,
+	op_halt
 };
 
 struct definition {
