@@ -177,6 +177,10 @@ static inline void vm_exec_return_value(struct vm * restrict vm) {
 	vm_stack_push(vm, o);
 }
 
+struct object *vm_last_popped_stack_elem(struct vm * restrict vm) {
+	return vm->stack[vm->sp];
+}
+
 int vm_run(struct vm * restrict vm) {
 #include "jump_table.h"
 
@@ -192,16 +196,19 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_TRUE: {
+		puts("TARGET_TRUE");
 		vm_stack_push(vm, true_obj);
 		DISPATCH();
 	}
 
 	TARGET_FALSE: {
+		puts("TARGET_FALSE");
 		vm_stack_push(vm, false_obj);
 		DISPATCH();
 	}
 
 	TARGET_NULL: {
+		puts("TARGET_NULL");
 		vm_stack_push(vm, null_obj);
 		DISPATCH();
 	}
@@ -350,12 +357,14 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_RETURN: {
+		puts("TARGET_RETURN");
 		vm_exec_return(vm);
 		frame = vm_current_frame(vm);
 		DISPATCH();
 	}
 
 	TARGET_RETURN_VALUE: {
+		puts("TARGET_RETURN_VALUE");
 		vm_exec_return_value(vm);
 		frame = vm_current_frame(vm);
 		DISPATCH();
@@ -419,6 +428,7 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_FREE: {
+		puts("TARGET_GET_FREE");
 		int free_idx = read_uint8(frame->ip++);
 		struct object *cl = frame->cl;
 		vm_stack_push(vm, cl->data.cl->free[free_idx]);
@@ -437,7 +447,12 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_POP: {
+		puts("TARGET_POP");
 		vm_stack_pop_ignore(vm);
 		DISPATCH();
 	}
+
+	TARGET_HALT:
+		puts("TARGET_HALT");
+		return 0;
 }
