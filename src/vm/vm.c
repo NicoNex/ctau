@@ -66,16 +66,17 @@ static inline struct object *unwrap(struct object *o) {
 }
 
 static inline int assert(struct object *o, size_t n, ...) {
-	va_list ptr;
-	va_start(ptr, n);
+	va_list args;
+	va_start(args, n);
 	register enum obj_type type = o->type;
 
 	for (int i = 0; i < n; i++) {
-		if (type == va_arg(ptr, int)) {
+		if (type == va_arg(args, enum obj_type)) {
+			va_end(args);
 			return 1;
 		}
 	}
-	va_end(ptr);
+	va_end(args);
 	return 0;
 }
 
