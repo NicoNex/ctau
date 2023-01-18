@@ -62,6 +62,7 @@ static inline int expect_peek(struct parser *p, enum item_type t) {
 		next(p);
 		return 1;
 	}
+	printf("expected next item to be %s but got %s instead", itype_str(t), itype_str(p->peek.type));
 	return 0;
 }
 

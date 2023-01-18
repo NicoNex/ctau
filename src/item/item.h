@@ -92,6 +92,6 @@ enum item_type lookup_type(struct string s);
 struct string slice_str(char *s, size_t len);
 void print_item(struct item i);
 
-const char *type_string(enum item_type t);
+const char *itype_str(enum item_type t);
 
 #endif

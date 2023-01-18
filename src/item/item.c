@@ -63,7 +63,7 @@ void print_item(struct item i) {
 	printf("item: %s, type %d\n", lit, i.type);
 }
 
-inline const char *type_string(enum item_type t) {
+inline const char *itype_str(enum item_type t) {
 	static const char *strings[] = {
 		"item_eof",
 		"item_error",
