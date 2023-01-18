@@ -54,6 +54,7 @@ struct object {
 	enum obj_type type;
 	size_t len;
 	void (*dispose)(struct object *o);
+	void (*print)(struct object *o);
 };
 
 struct object *new_function_obj(uint8_t *insts, size_t len, int num_locals, int num_params);
@@ -64,7 +65,7 @@ struct object *new_integer_obj(uint64_t val);
 struct object *new_float_obj(double val);
 struct object *parse_bool(int b);
 
-void dummy_dispose(struct object *o);
+void print_boolean_obj(struct object *o);
 
 extern struct object *true_obj;
 extern struct object *false_obj;

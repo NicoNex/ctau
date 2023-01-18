@@ -1,9 +1,14 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "obj.h"
 
 static void dispose_function_obj(struct object *o) {
 	free(o->data.fn);
 	free(o);
+}
+
+static void print_function_obj(struct object *o) {
+	printf("closure[%p]\n", o->data.fn);
 }
 
 struct object *new_function_obj(uint8_t *insts, size_t len, int num_params, int num_locals) {
@@ -17,6 +22,7 @@ struct object *new_function_obj(uint8_t *insts, size_t len, int num_params, int 
 	o->data.fn = fn;
 	o->type = obj_function;
 	o->dispose = dispose_function_obj;
+	o->print = print_function_obj;
 
 	return o;
 }
