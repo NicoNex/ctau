@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdarg.h>
 
+#define NUM_OPCODES 46
+
 enum opcode {
 	op_constant,
 	op_true,
@@ -68,7 +70,7 @@ struct definition {
 	int noperands;
 };
 
-extern struct definition definitions[op_pop+1];
+extern struct definition definitions[NUM_OPCODES];
 
 int lookup_def(enum opcode op, struct definition *def);
 size_t make_bcode(uint8_t **code, size_t code_len, enum opcode op, ...);

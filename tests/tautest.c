@@ -53,6 +53,7 @@ TEST test_compiler(void) {
 	ASSERT(bc.len == 4);
 	ASSERT(bc.insts[0] == op_constant);
 	ASSERT(read_uint16(&bc.insts[1]) == pos);
+	ASSERT(bc.insts[3] == op_halt);
 	free(c);
 
 	PASS();

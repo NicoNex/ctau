@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include "code.h"
 
-#define NUM_OPCODES 45
-
 int lookup_def(enum opcode opcode, struct definition *def) {
 	if (opcode >= NUM_OPCODES) {
 		return 0;
@@ -24,10 +22,12 @@ static inline void put_uint32(uint8_t *code, uint32_t i) {
 	code[3] = i & 0xff;
 }
 
+#include <stdio.h>
 size_t vmake_bcode(uint8_t **code, size_t code_len, enum opcode op, va_list operands) {
 	struct definition def;
 
 	if (!lookup_def(op, &def)) {
+		puts("dio cane");
 		return code_len;
 	}
 
@@ -117,7 +117,7 @@ int read_operands(struct definition def, uint8_t *ins, int **operands) {
 	return offset;
 }
 
-struct definition definitions[op_pop+1] = {
+struct definition definitions[NUM_OPCODES] = {
 	{"op_constant", (int[1]) {2}, 1},
 	{"op_true", (int[1]) {0}, 0},
 	{"op_false", (int[1]) {0}, 0},
@@ -170,5 +170,6 @@ struct definition definitions[op_pop+1] = {
 	{"op_load_module", (int[1]) {0}, 0},
 	{"op_interpolate", (int[2]) {2, 2}, 2},
 
-	{"op_pop", (int[1]) {0}, 0}
+	{"op_pop", (int[1]) {0}, 0},
+	{"op_halt", (int[1]) {0}, 0}
 };
