@@ -21,7 +21,8 @@ static inline struct frame new_frame(struct object *cl, uint32_t base_ptr) {
 	return (struct frame) {
 		.cl = cl,
 		.base_ptr = base_ptr,
-		.ip = cl->data.cl->fn->instructions
+		.ip = cl->data.cl->fn->instructions,
+		.start = cl->data.cl->fn->instructions
 	};
 }
 
@@ -93,10 +94,10 @@ static inline void vm_exec_add(struct vm * restrict vm) {
 	} else if (assert(left, 1, obj_string) && assert(right, 1, obj_string)) {
 		puts("adding two strings is not yet supported!");
 		exit(1);
+	} else {
+		puts("unsupported operator '+' for the two types");
+		exit(1);
 	}
-
-	puts("unsupported operator '+' for the two types");
-	exit(1);
 }
 
 static inline void vm_exec_sub(struct vm * restrict vm) {
@@ -112,10 +113,10 @@ static inline void vm_exec_sub(struct vm * restrict vm) {
 	} else if (assert(left, 1, obj_string) && assert(right, 1, obj_string)) {
 		puts("subtracting two strings is not yet supported");
 		exit(1);
+	} else {
+		puts("unsupported operator '-' for the two types");
+		exit(1);
 	}
-
-	puts("unsupported operator '-' for the two types");
-	exit(1);
 }
 
 static inline void vm_exec_greater_than(struct vm * restrict vm) {
@@ -131,10 +132,10 @@ static inline void vm_exec_greater_than(struct vm * restrict vm) {
 	} else if (assert(left, 1, obj_string) && assert(right, 1, obj_string)) {
 		puts("comparing two strings is not yet supported");
 		exit(1);
+	} else {
+		puts("unsupported operator '>' for the two types");
+		exit(1);
 	}
-
-	puts("unsupported operator '>' for the two types");
-	exit(1);
 }
 
 static inline void vm_call_closure(struct vm * restrict vm, struct object *cl, size_t numargs) {
@@ -179,7 +180,22 @@ static inline void vm_exec_return_value(struct vm * restrict vm) {
 }
 
 struct object *vm_last_popped_stack_elem(struct vm * restrict vm) {
-	return vm->stack[vm->sp];
+	return vm->stack[vm->sp-1];
+}
+
+static inline uint32_t is_truthy(struct object * restrict o) {
+	switch (o->type) {
+	case obj_boolean:
+		return o == true_obj;
+	case obj_integer:
+		return o->data.i != 0;
+	case obj_float:
+		return o->data.f != 0;
+	case obj_null:
+		return 0;
+	default:
+		return 1;
+	}
 }
 
 int vm_run(struct vm * restrict vm) {
@@ -241,11 +257,13 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_ADD: {
+		puts("TARGET_ADD");
 		vm_exec_add(vm);
 		DISPATCH();
 	}
 
 	TARGET_SUB: {
+		puts("TARGET_SUB");
 		vm_exec_sub(vm);
 		DISPATCH();
 	}
@@ -318,6 +336,7 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GREATER_THAN: {
+		puts("TARGET_GREATER_THAN");
 		vm_exec_greater_than(vm);
 		DISPATCH();
 	}
@@ -373,12 +392,22 @@ int vm_run(struct vm * restrict vm) {
 
 
 	TARGET_JUMP: {
-		UNHANDLED();
+		puts("TARGET_JUMP");
+		uint16_t pos = read_uint16(frame->ip);
+		frame->ip = &frame->start[pos];
 		DISPATCH();
 	}
 
 	TARGET_JUMP_NOT_TRUTHY: {
-		UNHANDLED();
+		puts("TARGET_JUMP_NOT_TRUTHY");
+		uint16_t pos = read_uint16(frame->ip);
+		frame->ip += 2;
+
+		struct object *cond = unwrap(vm_stack_pop(vm));
+		if (!is_truthy(cond)) {
+			frame->ip = &frame->start[pos];
+		}
+
 		DISPATCH();
 	}
 

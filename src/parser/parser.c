@@ -62,7 +62,7 @@ static inline int expect_peek(struct parser *p, enum item_type t) {
 		next(p);
 		return 1;
 	}
-	printf("expected next item to be %s but got %s instead", itype_str(t), itype_str(p->peek.type));
+	printf("expected next item to be %s but got %s instead\n", itype_str(t), itype_str(p->peek.type));
 	return 0;
 }
 
@@ -175,7 +175,6 @@ static struct node *parse_grouped_expr(struct parser *p) {
 	next(p);
 	struct node *expr = parse_expr(p, lowest);
 	if (!expect_peek(p, item_rparen)) {
-		puts("expecting \")\"");
 		exit(1);
 	}
 
@@ -219,7 +218,7 @@ static struct node *parse_block(struct parser *p) {
 	}
 
 	if (!item_is(p->cur, item_rbrace)) {
-		puts("expected \"}\" after block");
+		// puts("expected \"}\" after block");
 		exit(1);
 	}
 
@@ -263,7 +262,7 @@ static size_t parse_function_params(struct parser *p, char ***params) {
 
 static struct node *parse_function(struct parser *p) {
 	if (!expect_peek(p, item_lparen)) {
-		puts("expected \"(\" after fn keyword");
+		// puts("expected \"(\" after fn keyword");
 		exit(1);
 	}
 
@@ -271,7 +270,7 @@ static struct node *parse_function(struct parser *p) {
 	size_t nparams = parse_function_params(p, &params);
 
 	if (!expect_peek(p, item_lbrace)) {
-		puts("expected \"{\" after function arguments");
+		// puts("expected \"{\" after function arguments");
 		exit(1);
 	}
 
@@ -283,8 +282,7 @@ static struct node *parse_ifexpr(struct parser *p) {
 	struct node *cond = parse_expr(p, lowest);
 
 	if (!expect_peek(p, item_lbrace)) {
-		puts("expecting \"{\" after if keyword");
-		printf("index: %d\n", p->index);
+		// puts("expecting \"{\" after if keyword");
 		print_item(p->cur);
 		print_item(p->peek);
 		exit(1);
@@ -301,7 +299,7 @@ static struct node *parse_ifexpr(struct parser *p) {
 			alt = parse_ifexpr(p);
 		} else {
 			if (!expect_peek(p, item_lbrace)) {
-				puts("expecting \"{\" after else keyword");
+				// puts("expecting \"{\" after else keyword");
 				exit(1);
 			}
 			alt = parse_block(p);

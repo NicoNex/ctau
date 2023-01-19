@@ -56,6 +56,15 @@ TEST test_compiler(void) {
 	ASSERT(bc.insts[3] == op_halt);
 	free(c);
 
+	c = new_compiler();
+	int jump_pos = compiler_emit(c, op_jump, 9999);
+	compiler_replace_operand(c, jump_pos, 123);
+	bc = compiler_bytecode(c);
+	ASSERT(bc.len == 3);
+	ASSERT(bc.insts[0] == op_jump);
+	ASSERT(read_uint16(&bc.insts[1]) == 123);
+	free(c);
+
 	PASS();
 }
 

@@ -8,7 +8,7 @@ static void dispose_integer_obj(struct object *o) {
 
 static void print_integer_obj(struct object *o) {
 	int64_t i = o->data.i;
-	printf("%lld\n", i);
+	printf("%ld\n", i);
 }
 
 struct object *new_integer_obj(uint64_t val) {

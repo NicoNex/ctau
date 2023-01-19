@@ -33,6 +33,7 @@ void compiler_set_last_inst(struct compiler *c, enum opcode op, int pos) {
 int compiler_emit(struct compiler *c, enum opcode op, ...) {
 	struct scope *scope = &c->scopes[c->scope_index];
 	uint8_t **code = &scope->insts;
+	int pos = scope->len;
 
 	va_list args;
 	va_start(args, op);
@@ -40,7 +41,7 @@ int compiler_emit(struct compiler *c, enum opcode op, ...) {
 	va_end(args);
 	compiler_set_last_inst(c, op, scope->len);
 
-	return scope->len;
+	return pos;
 }
 
 int compiler_last_is(struct compiler *c, uint8_t op) {

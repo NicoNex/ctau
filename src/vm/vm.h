@@ -12,6 +12,7 @@
 struct frame {
 	struct object *cl;
 	uint8_t *ip;
+	uint8_t *start;
 	uint32_t base_ptr;
 };
 
