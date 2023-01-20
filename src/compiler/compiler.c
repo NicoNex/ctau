@@ -37,9 +37,9 @@ int compiler_emit(struct compiler *c, enum opcode op, ...) {
 
 	va_list args;
 	va_start(args, op);
-	scope->len = vmake_bcode(code, scope->len, op, args);
+	scope->len = vmake_bcode(code, pos, op, args);
 	va_end(args);
-	compiler_set_last_inst(c, op, scope->len);
+	compiler_set_last_inst(c, op, pos);
 
 	return pos;
 }
@@ -141,6 +141,7 @@ int compiler_replace_break_operand(struct compiler *c, int start, int end, int o
 
 void compiler_replace_last_pop_with_return(struct compiler *c) {
 	int pos = c->scopes[c->scope_index].last_inst.position;
+
 	uint8_t *new = NULL;
 	size_t len = make_bcode(&new, 0, op_return_value);
 	compiler_replace_inst(c, pos, new, len);

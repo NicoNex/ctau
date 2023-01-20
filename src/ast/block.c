@@ -8,7 +8,7 @@ int compile_block(struct node *n, struct compiler *c) {
 		struct node *expr = b->nodes[i];
 		CHECK(pos = expr->compile(expr, c));
 
-		if (expr->type == return_node_t) {
+		if (expr->type != return_node_t) {
 			pos = compiler_emit(c, op_pop);
 		}
 	}

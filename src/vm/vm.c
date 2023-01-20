@@ -180,7 +180,7 @@ static inline void vm_exec_return_value(struct vm * restrict vm) {
 }
 
 struct object *vm_last_popped_stack_elem(struct vm * restrict vm) {
-	return vm->stack[vm->sp-1];
+	return vm->stack[vm->sp];
 }
 
 static inline uint32_t is_truthy(struct object * restrict o) {
