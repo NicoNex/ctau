@@ -139,3 +139,80 @@ inline const char *itype_str(enum item_type t) {
 
 	return strings[t];
 }
+
+inline const char *itype_lit(enum item_type t) {
+	static const char *strings[] = {
+		"eof",
+		"error",
+		"null",
+
+		"identifier",
+		"int",
+		"float",
+		"string",
+		"rawstring",
+
+		"=",
+		"+",
+		"-",
+		"/",
+		"*",
+		"%",
+		"+=",
+		"-=",
+		"*=",
+		"/=",
+		"%=",
+		"&=",
+		"|=",
+		"^=",
+		"<<=",
+		"<<=",
+		"==",
+		"!=",
+		"!",
+		"<",
+		">",
+		"<=",
+		">=",
+		"&&",
+		"||",
+		"&",
+		"~",
+		"|",
+		"^",
+		"<<",
+		">>",
+		"++",
+		"--",
+
+		".",
+		",",
+		":",
+		";",
+		"\\n",
+
+		"(",
+		")",
+
+		"{",
+		"}",
+
+		"[",
+		"]",
+
+		"fn",
+		"for",
+		"continue",
+		"break",
+		"if",
+		"else",
+		"true",
+		"false",
+		"return",
+		"import",
+		"tau"
+	};
+
+	return strings[t];
+}
