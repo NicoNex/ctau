@@ -229,7 +229,6 @@ static size_t parse_function_params(struct parser *p, char ***params) {
 	size_t len = 0;
 
 	if (expect_peek(p, item_rparen)) {
-		next(p);
 		return len;
 	}
 
@@ -253,7 +252,6 @@ static size_t parse_function_params(struct parser *p, char ***params) {
 	}
 
 	if (!expect_peek(p, item_rparen)) {
-		puts("expected \")\" after params definition");
 		exit(1);
 	}
 
@@ -262,7 +260,6 @@ static size_t parse_function_params(struct parser *p, char ***params) {
 
 static struct node *parse_function(struct parser *p) {
 	if (!expect_peek(p, item_lparen)) {
-		// puts("expected \"(\" after fn keyword");
 		exit(1);
 	}
 
@@ -270,7 +267,6 @@ static struct node *parse_function(struct parser *p) {
 	size_t nparams = parse_function_params(p, &params);
 
 	if (!expect_peek(p, item_lbrace)) {
-		// puts("expected \"{\" after function arguments");
 		exit(1);
 	}
 
