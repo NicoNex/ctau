@@ -228,7 +228,8 @@ static struct node *parse_block(struct parser *p) {
 static size_t parse_function_params(struct parser *p, char ***params) {
 	size_t len = 0;
 
-	if (expect_peek(p, item_rparen)) {
+	if (item_is(p->peek, item_rparen)) {
+		next(p);
 		return len;
 	}
 
