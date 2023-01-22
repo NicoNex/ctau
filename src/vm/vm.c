@@ -255,7 +255,6 @@ int vm_run(struct vm * restrict vm) {
 		DISPATCH();
 	}
 
-
 	TARGET_ADD: {
 		puts("TARGET_ADD");
 		vm_exec_add(vm);
@@ -282,7 +281,6 @@ int vm_run(struct vm * restrict vm) {
 		UNHANDLED();
 		DISPATCH();
 	}
-
 
 	TARGET_BW_AND: {
 		UNHANDLED();
@@ -313,7 +311,6 @@ int vm_run(struct vm * restrict vm) {
 		UNHANDLED();
 		DISPATCH();
 	}
-
 
 	TARGET_AND: {
 		UNHANDLED();
@@ -346,7 +343,6 @@ int vm_run(struct vm * restrict vm) {
 		DISPATCH();
 	}
 
-
 	TARGET_MINUS: {
 		UNHANDLED();
 		DISPATCH();
@@ -361,7 +357,6 @@ int vm_run(struct vm * restrict vm) {
 		UNHANDLED();
 		DISPATCH();
 	}
-
 
 	TARGET_CALL: {
 		puts("TARGET_CALL");
@@ -390,7 +385,6 @@ int vm_run(struct vm * restrict vm) {
 		DISPATCH();
 	}
 
-
 	TARGET_JUMP: {
 		puts("TARGET_JUMP");
 		uint16_t pos = read_uint16(frame->ip);
@@ -410,7 +404,6 @@ int vm_run(struct vm * restrict vm) {
 
 		DISPATCH();
 	}
-
 
 	TARGET_DOT: {
 		UNHANDLED();
@@ -474,7 +467,6 @@ int vm_run(struct vm * restrict vm) {
 		UNHANDLED();
 		DISPATCH();
 	}
-
 
 	TARGET_POP: {
 		puts("TARGET_POP");
