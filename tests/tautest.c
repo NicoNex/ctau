@@ -65,6 +65,23 @@ TEST test_compiler(void) {
 	ASSERT(read_uint16(&bc.insts[1]) == 123);
 	free(c);
 
+	c = new_compiler();
+	pos = compiler_add_const(c, new_integer_obj(123));
+	int pos2 = compiler_add_const(c, new_integer_obj(456));
+	compiler_emit(c, op_constant, pos);
+	bc = compiler_bytecode(c);
+	ASSERT(bc.len = 3);
+	ASSERT(bc.insts[0] == op_constant);
+	ASSERT(read_uint16(&bc.insts[1]) == pos);
+	struct object *o1 = bc.consts[pos];
+	struct object *o2 = bc.consts[pos2];
+	ASSERT(o1 != NULL);
+	ASSERT(o1->data.i == 123);
+	ASSERT(o2 != NULL);
+	ASSERT(o2->data.i == 456);
+	free(c);
+	free(o1);
+
 	PASS();
 }
 
