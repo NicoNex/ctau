@@ -23,7 +23,7 @@ struct symbol *symbol_table_define(struct symbol_table *s, char *name) {
 	}
 
 	enum symbol_scope scope = s->outer != NULL ? local_scope : global_scope;
-	symbol = new_symbol(name, s->num_defs, scope);
+	symbol = new_symbol(name, scope, s->num_defs);
 	strmap_set(&s->store, name, symbol);
 	s->num_defs++;
 	return symbol;

@@ -36,7 +36,7 @@ static void _strmap_add_strnode(struct strnode **m, struct strnode *n) {
 	if (*m == NULL) {
 		*m = n;
 	} else {
-		_strmap_add_strnode(n->hash < (*m)->hash ? &(*m)->l : &(*m)-> r, n);
+		_strmap_add_strnode(n->hash < (*m)->hash ? &(*m)->l : &(*m)->r, n);
 	}
 }
 

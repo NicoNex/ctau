@@ -30,3 +30,28 @@ object *null_obj = &(struct object) {
 	.dispose = dummy_dispose,
 	.print = print_null_obj
 };
+
+char *otype_str(enum obj_type t) {
+	char *strings[] = {
+		"boolean",
+		"builtin",
+		"bytes",
+		"class",
+		"closure",
+		"error",
+		"float",
+		"function",
+		"getsetter",
+		"integer",
+		"list",
+		"map",
+		"module",
+		"nativestruct",
+		"null",
+		"pipe",
+		"plugin",
+		"string"
+	};
+
+	return strings[t];
+}

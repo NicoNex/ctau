@@ -85,6 +85,7 @@ static inline void vm_exec_add(struct vm * restrict vm) {
 	struct object *right = unwrap(vm_stack_pop(vm));
 	struct object *left = unwrap(vm_stack_pop(vm));
 
+	printf("%p %p\n", left, right);
 	if (assert(left, 1, obj_integer) && assert(right, 1, obj_integer)) {
 		vm_stack_push(vm, new_integer_obj(left->data.i + right->data.i));
 	} else if (assert(left, 2, obj_integer, obj_float) && assert(right, 2, obj_integer, obj_float)) {
@@ -255,7 +256,6 @@ int vm_run(struct vm * restrict vm) {
 		DISPATCH();
 	}
 
-
 	TARGET_ADD: {
 		puts("TARGET_ADD");
 		vm_exec_add(vm);
@@ -282,7 +282,6 @@ int vm_run(struct vm * restrict vm) {
 		UNHANDLED();
 		DISPATCH();
 	}
-
 
 	TARGET_BW_AND: {
 		UNHANDLED();
@@ -313,7 +312,6 @@ int vm_run(struct vm * restrict vm) {
 		UNHANDLED();
 		DISPATCH();
 	}
-
 
 	TARGET_AND: {
 		UNHANDLED();
@@ -346,7 +344,6 @@ int vm_run(struct vm * restrict vm) {
 		DISPATCH();
 	}
 
-
 	TARGET_MINUS: {
 		UNHANDLED();
 		DISPATCH();
@@ -361,7 +358,6 @@ int vm_run(struct vm * restrict vm) {
 		UNHANDLED();
 		DISPATCH();
 	}
-
 
 	TARGET_CALL: {
 		puts("TARGET_CALL");
@@ -390,7 +386,6 @@ int vm_run(struct vm * restrict vm) {
 		DISPATCH();
 	}
 
-
 	TARGET_JUMP: {
 		puts("TARGET_JUMP");
 		uint16_t pos = read_uint16(frame->ip);
@@ -411,7 +406,6 @@ int vm_run(struct vm * restrict vm) {
 		DISPATCH();
 	}
 
-
 	TARGET_DOT: {
 		UNHANDLED();
 		DISPATCH();
@@ -427,6 +421,8 @@ int vm_run(struct vm * restrict vm) {
 		int global_idx = read_uint16(frame->ip);
 		frame->ip += 2;
 		vm_stack_push(vm, vm->state.globals[global_idx]);
+
+		printf("idx %d, global %p\n", global_idx, vm->state.globals[global_idx]);
 		DISPATCH();
 	}
 
@@ -474,7 +470,6 @@ int vm_run(struct vm * restrict vm) {
 		UNHANDLED();
 		DISPATCH();
 	}
-
 
 	TARGET_POP: {
 		puts("TARGET_POP");

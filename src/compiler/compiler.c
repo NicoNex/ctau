@@ -20,7 +20,7 @@ int compiler_add_const(struct compiler *c, struct object *o) {
 	int pos = c->nconsts;
 	c->consts = realloc(c->consts, sizeof(struct object *) * ++c->nconsts);
 	c->consts[pos] = o;
-	return c->nconsts - 1;
+	return pos;
 }
 
 void compiler_set_last_inst(struct compiler *c, enum opcode op, int pos) {

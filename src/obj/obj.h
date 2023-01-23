@@ -64,6 +64,7 @@ struct object *new_integer_obj(uint64_t val);
 // TODO: implement new_float_obj.
 struct object *new_float_obj(double val);
 struct object *parse_bool(int b);
+char *otype_str(enum obj_type t);
 
 void print_boolean_obj(struct object *o);
 
