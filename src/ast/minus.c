@@ -11,7 +11,7 @@ int compile_minus(struct node *n, struct compiler *c) {
 	CHECK(m->l->compile(m->l, c));
 	CHECK(m->r->compile(m->r, c));
 
-	return compiler_emit(c, op_minus);
+	return compiler_emit(c, op_sub);
 }
 
 void dispose_minus_node(struct node *n) {
