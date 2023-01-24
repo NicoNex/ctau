@@ -1,7 +1,9 @@
+#include <string.h>
 #include <stdint.h>
 #include "greatest.h"
 #include "../src/code/code.h"
 #include "../src/compiler/compiler.h"
+#include "../src/data/map.h"
 
 #define RESET_CODE(code) free(code); code = NULL
 
@@ -85,9 +87,36 @@ TEST test_compiler(void) {
 	PASS();
 }
 
+TEST test_symboltable(void) {
+	struct symbol_table *outer = new_symbol_table();
+	struct symbol_table *st = new_enclosed_symbol_table(outer);
+
+	struct symbol *s1 = symbol_table_define(outer, "test1");
+	struct symbol *s2 = symbol_table_define(st, "test2");
+	struct symbol *t1 = symbol_table_resolve(st, "test1");
+	struct symbol *t2 = symbol_table_resolve(st, "test2");
+
+	ASSERT(t1->scope == global_scope);
+	ASSERT(t2->scope == local_scope);
+
+	ASSERT(strcmp(s1->name, t1->name) == 0);
+	ASSERT(s1->scope == t1->scope);
+	ASSERT(s1->index == t1->index);
+
+	ASSERT(strcmp(s2->name, t2->name) == 0);
+	ASSERT(s2->scope == t2->scope);
+	ASSERT(s2->index == t2->index);
+
+	// symbol_table_free(outer);
+	// symbol_table_free(st);
+
+	PASS();
+}
+
 SUITE(tautest) {
 	RUN_TEST(test_make);
 	RUN_TEST(test_compiler);
+	RUN_TEST(test_symboltable);
 }
 
 GREATEST_MAIN_DEFS();
