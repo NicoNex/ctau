@@ -123,13 +123,13 @@ static size_t parse_node_sequence(struct parser *p, struct node ***nodelist, enu
 	}
 
 	*nodelist = realloc(*nodelist, sizeof(struct node *) * ++len);
-	*nodelist[len-1] = parse_expr(p, lowest);
+	(*nodelist)[len-1] = parse_expr(p, lowest);
 
 	while (item_is(p->peek, sep)) {
 		next(p);
 		next(p);
 		*nodelist = realloc(*nodelist, sizeof(struct node *) * ++len);
-		*nodelist[len-1] = parse_expr(p, lowest);
+		(*nodelist)[len-1] = parse_expr(p, lowest);
 	}
 
 	if (!expect_peek(p, end)) {
@@ -238,7 +238,7 @@ static size_t parse_function_params(struct parser *p, char ***params) {
 	strncpy(param, p->cur.lit.val, p->cur.lit.len);
 
 	*params = realloc(*params, sizeof(char **));
-	*params[0] = param;
+	(*params)[0] = param;
 	len += 1;
 
 	while (item_is(p->peek, item_comma)) {
@@ -249,7 +249,7 @@ static size_t parse_function_params(struct parser *p, char ***params) {
 		strncpy(param, p->cur.lit.val, p->cur.lit.len);
 
 		*params = realloc(*params, sizeof(char **) * ++len);
-		*params[len-1] = param;
+		(*params)[len-1] = param;
 	}
 
 	if (!expect_peek(p, item_rparen)) {
