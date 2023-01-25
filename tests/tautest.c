@@ -93,11 +93,15 @@ TEST test_symboltable(void) {
 
 	struct symbol *s1 = symbol_table_define(outer, "test1");
 	struct symbol *s2 = symbol_table_define(st, "test2");
+	struct symbol *s3 = symbol_table_define(st, "test3");
+
 	struct symbol *t1 = symbol_table_resolve(st, "test1");
 	struct symbol *t2 = symbol_table_resolve(st, "test2");
+	struct symbol *t3 = symbol_table_resolve(st, "test3");
 
 	ASSERT(t1->scope == global_scope);
 	ASSERT(t2->scope == local_scope);
+	ASSERT(t3->scope == local_scope);
 
 	ASSERT(strcmp(s1->name, t1->name) == 0);
 	ASSERT(s1->scope == t1->scope);
@@ -107,8 +111,12 @@ TEST test_symboltable(void) {
 	ASSERT(s2->scope == t2->scope);
 	ASSERT(s2->index == t2->index);
 
-	// symbol_table_free(outer);
-	// symbol_table_free(st);
+	ASSERT(strcmp(s3->name, t3->name) == 0);
+	ASSERT(s3->scope == t3->scope);
+	ASSERT(s3->index == t3->index);
+
+	symbol_table_free(st);
+	symbol_table_free(outer);
 
 	PASS();
 }
