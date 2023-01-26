@@ -205,7 +205,6 @@ int vm_run(struct vm * restrict vm) {
 	DISPATCH();
 
 	TARGET_CONST: {
-		puts("TARGET_CONST");
 		uint16_t idx = read_uint16(frame->ip);
 		frame->ip += 2;
 		vm_stack_push(vm, vm->state.consts[idx]);
@@ -213,19 +212,16 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_TRUE: {
-		puts("TARGET_TRUE");
 		vm_stack_push(vm, true_obj);
 		DISPATCH();
 	}
 
 	TARGET_FALSE: {
-		puts("TARGET_FALSE");
 		vm_stack_push(vm, false_obj);
 		DISPATCH();
 	}
 
 	TARGET_NULL: {
-		puts("TARGET_NULL");
 		vm_stack_push(vm, null_obj);
 		DISPATCH();
 	}
@@ -241,7 +237,6 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_CLOSURE: {
-		puts("TARGET_CLOSURE");
 		uint16_t const_idx = read_uint16(frame->ip);
 		uint8_t num_free = read_uint8(frame->ip+2);
 		frame->ip += 3;
@@ -250,19 +245,16 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_CURRENT_CLOSURE: {
-		puts("TARGET_CURRENT_CLOSURE");
 		vm_stack_push(vm, frame->cl);
 		DISPATCH();
 	}
 
 	TARGET_ADD: {
-		puts("TARGET_ADD");
 		vm_exec_add(vm);
 		DISPATCH();
 	}
 
 	TARGET_SUB: {
-		puts("TARGET_SUB");
 		vm_exec_sub(vm);
 		DISPATCH();
 	}
@@ -333,7 +325,6 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GREATER_THAN: {
-		puts("TARGET_GREATER_THAN");
 		vm_exec_greater_than(vm);
 		DISPATCH();
 	}
@@ -359,7 +350,6 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_CALL: {
-		puts("TARGET_CALL");
 		uint8_t num_args = read_uint8(frame->ip++);
 		vm_exec_call(vm, num_args);
 		frame = vm_current_frame(vm);
@@ -372,28 +362,24 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_RETURN: {
-		puts("TARGET_RETURN");
 		vm_exec_return(vm);
 		frame = vm_current_frame(vm);
 		DISPATCH();
 	}
 
 	TARGET_RETURN_VALUE: {
-		puts("TARGET_RETURN_VALUE");
 		vm_exec_return_value(vm);
 		frame = vm_current_frame(vm);
 		DISPATCH();
 	}
 
 	TARGET_JUMP: {
-		puts("TARGET_JUMP");
 		uint16_t pos = read_uint16(frame->ip);
 		frame->ip = &frame->start[pos];
 		DISPATCH();
 	}
 
 	TARGET_JUMP_NOT_TRUTHY: {
-		puts("TARGET_JUMP_NOT_TRUTHY");
 		uint16_t pos = read_uint16(frame->ip);
 		frame->ip += 2;
 
@@ -415,7 +401,6 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_GLOBAL: {
-		puts("TARGET_GET_GLOBAL");
 		int global_idx = read_uint16(frame->ip);
 		frame->ip += 2;
 		vm_stack_push(vm, vm->state.globals[global_idx]);
@@ -423,7 +408,6 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_SET_GLOBAL: {
-		puts("TARGET_SET_GLOBAL");
 		int global_idx = read_uint16(frame->ip);
 		frame->ip += 2;
 		vm->state.globals[global_idx] = vm_stack_peek(vm);
@@ -431,14 +415,12 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_LOCAL: {
-		puts("TARGET_GET_LOCAL");
 		int local_idx = read_uint8(frame->ip++);
 		vm_stack_push(vm, vm->stack[frame->base_ptr+local_idx]);
 		DISPATCH();
 	}
 
 	TARGET_SET_LOCAL: {
-		puts("TARGET_SET_LOCAL");
 		int local_idx = read_uint8(frame->ip++);
 		vm->stack[frame->base_ptr+local_idx] = vm_stack_peek(vm);
 		DISPATCH();
@@ -450,7 +432,6 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GET_FREE: {
-		puts("TARGET_GET_FREE");
 		int free_idx = read_uint8(frame->ip++);
 		struct object *cl = frame->cl;
 		vm_stack_push(vm, cl->data.cl->free[free_idx]);
@@ -468,12 +449,10 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_POP: {
-		puts("TARGET_POP");
 		vm_stack_pop_ignore(vm);
 		DISPATCH();
 	}
 
 	TARGET_HALT:
-		puts("TARGET_HALT");
 		return 0;
 }
