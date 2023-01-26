@@ -34,7 +34,7 @@ int compile_function(struct node *n, struct compiler *c) {
 		CHECK(compiler_load_symbol(c, free_symbols[i]));
 	}
 
-	struct object *fnobj = new_function_obj(insts, inslen, num_locals, nfree);
+	struct object *fnobj = new_function_obj(insts, inslen, num_locals, fn->nparams);
 	int fnpos = compiler_add_const(c, fnobj);
 	return compiler_emit(c, op_closure, fnpos, nfree);
 }
