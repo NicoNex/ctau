@@ -17,11 +17,14 @@ fib = fn(n) {\
 }\
 fib(35)";
 
+
 	struct node *tree = parse_input(code, strlen(code));
 	struct compiler *c = new_compiler();
 	compile(c, tree);
 	struct vm *vm = new_vm(compiler_bytecode(c));
 	vm_run(vm);
+	struct object *o = vm_last_popped_stack_elem(vm);
+	o->print(o);
 
 	return 0;
 }
