@@ -1,7 +1,7 @@
 #ifndef JUMP_TABLE_H_
 #define JUMP_TABLE_H_
 
-static void *jump_table[] = {
+static const void *jump_table[] = {
 	&&TARGET_CONST,
 	&&TARGET_TRUE,
 	&&TARGET_FALSE,
