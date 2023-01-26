@@ -8,7 +8,11 @@ static void dispose_integer_obj(struct object *o) {
 
 static void print_integer_obj(struct object *o) {
 	int64_t i = o->data.i;
+#ifdef __APPLE__
+	printf("%lld\n", i);
+#else
 	printf("%ld\n", i);
+#endif
 }
 
 struct object *new_integer_obj(int64_t val) {
