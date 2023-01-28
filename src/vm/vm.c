@@ -19,8 +19,8 @@
 
 #define ASSERT(obj, t) (obj->type == t)
 #define ASSERT2(obj, t1, t2) (ASSERT(obj, t1) || ASSERT(obj, t2))
-#define M_ASSERT(o1, o2, t) ASSERT(o1, t) && ASSERT(o2, t)
-#define M_ASSERT2(o1, o2, t1, t2) ASSERT2(o1, t1, t2) && ASSERT2(o2, t1, t2)
+#define M_ASSERT(o1, o2, t) (ASSERT(o1, t) && ASSERT(o2, t))
+#define M_ASSERT2(o1, o2, t1, t2) (ASSERT2(o1, t1, t2) && ASSERT2(o2, t1, t2))
 
 static inline struct frame new_frame(struct object *cl, uint32_t base_ptr) {
 	return (struct frame) {
@@ -32,7 +32,12 @@ static inline struct frame new_frame(struct object *cl, uint32_t base_ptr) {
 }
 
 struct state new_state() {
-	return (struct state) {0};
+	return (struct state) {
+		.st = new_symbol_table(),
+		.consts = calloc(0, sizeof(struct object *)),
+		.nconsts = 0,
+		.globals = {0}
+	};
 }
 
 struct vm *new_vm(struct bytecode bytecode) {
@@ -44,6 +49,27 @@ struct vm *new_vm(struct bytecode bytecode) {
 	vm->frames[0] = new_frame(cl, 0);
 
 	return vm;
+}
+
+struct vm *new_vm_with_state(struct bytecode bytecode, struct state state) {
+	struct vm *vm = calloc(1, sizeof(struct vm));
+	vm->state = state;
+
+	struct object *fn = new_function_obj(bytecode.insts, bytecode.len, 0, 0);
+	struct object *cl = new_closure_obj(fn->data.fn, NULL, 0);
+	vm->frames[0] = new_frame(cl, 0);
+
+	return vm;
+}
+
+void vm_dispose(struct vm *vm) {
+	for (size_t i = 0; i < STACK_SIZE; i++) {
+		if (vm->stack[i] != NULL) {
+			free(vm->stack[i]);
+		}
+	}
+
+	free(vm);
 }
 
 static inline void vm_push_closure(struct vm *restrict vm, uint32_t const_idx, uint32_t num_free) {
@@ -71,6 +97,13 @@ static inline struct object *unwrap(struct object *o) {
 	return o;
 }
 
+static inline double to_double(struct object * restrict o) {
+	if (ASSERT(o, obj_integer)) {
+		return o->data.i;
+	}
+	return o->data.f;
+}
+
 static inline void vm_exec_add(struct vm * restrict vm) {
 	struct object *right = unwrap(vm_stack_pop(vm));
 	struct object *left = unwrap(vm_stack_pop(vm));
@@ -78,9 +111,9 @@ static inline void vm_exec_add(struct vm * restrict vm) {
 	if (M_ASSERT(left, right, obj_integer)) {
 		vm_stack_push(vm, new_integer_obj(left->data.i + right->data.i));
 	} else if (M_ASSERT2(left, right, obj_integer, obj_float)) {
-		puts("adding two floats is not yet supported!");
-		exit(1);
-		vm_stack_push(vm, new_float_obj(left->data.f + right->data.f));
+		double l = to_double(left);
+		double r = to_double(right);
+		vm_stack_push(vm, new_float_obj(l + r));
 	} else if (M_ASSERT(left, right, obj_string)) {
 		puts("adding two strings is not yet supported!");
 		exit(1);
@@ -97,12 +130,9 @@ static inline void vm_exec_sub(struct vm * restrict vm) {
 	if (M_ASSERT(left, right, obj_integer)) {
 		vm_stack_push(vm, new_integer_obj(left->data.i - right->data.i));
 	} else if (M_ASSERT2(left, right, obj_integer, obj_float)) {
-		puts("subtracting two floats is not yet supported");
-		exit(1);
-		vm_stack_push(vm, new_float_obj(left->data.f - right->data.f));
-	} else if (M_ASSERT(left, right, obj_string)) {
-		puts("subtracting two strings is not yet supported");
-		exit(1);
+		double l = to_double(left);
+		double r = to_double(right);
+		vm_stack_push(vm, new_float_obj(l - r));
 	} else {
 		puts("unsupported operator '-' for the two types");
 		exit(1);
@@ -116,9 +146,28 @@ static inline void vm_exec_greater_than(struct vm * restrict vm) {
 	if (M_ASSERT(left, right, obj_integer)) {
 		vm_stack_push(vm, parse_bool(left->data.i > right->data.i));
 	} else if (M_ASSERT2(left, right, obj_integer, obj_float)) {
-		puts("comparing two floats is not yet supported");
+		double l = to_double(left);
+		double r = to_double(right);
+		vm_stack_push(vm, parse_bool(l > r));
+	} else if (M_ASSERT(left, right, obj_string)) {
+		puts("comparing two strings is not yet supported");
 		exit(1);
-		vm_stack_push(vm, parse_bool(left->data.f > right->data.f));
+	} else {
+		puts("unsupported operator '>' for the two types");
+		exit(1);
+	}
+}
+
+static inline void vm_exec_greater_than_eq(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	if (M_ASSERT(left, right, obj_integer)) {
+		vm_stack_push(vm, parse_bool(left->data.i >= right->data.i));
+	} else if (M_ASSERT2(left, right, obj_integer, obj_float)) {
+		double l = to_double(left);
+		double r = to_double(right);
+		vm_stack_push(vm, parse_bool(l >= r));
 	} else if (M_ASSERT(left, right, obj_string)) {
 		puts("comparing two strings is not yet supported");
 		exit(1);
@@ -187,6 +236,45 @@ static inline uint32_t is_truthy(struct object * restrict o) {
 		return 1;
 	}
 }
+
+/*
+ * The following comment is taken from CPython's source:
+ * https://github.com/python/cpython/blob/3.11/Python/ceval.c#L1243
+
+ * Computed GOTOs, or
+       the-optimization-commonly-but-improperly-known-as-"threaded code"
+ * using gcc's labels-as-values extension
+ * (http://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html).
+
+ * The traditional bytecode evaluation loop uses a "switch" statement, which
+ * decent compilers will optimize as a single indirect branch instruction
+ * combined with a lookup table of jump addresses. However, since the
+ * indirect jump instruction is shared by all opcodes, the CPU will have a
+ * hard time making the right prediction for where to jump next (actually,
+ * it will be always wrong except in the uncommon case of a sequence of
+ * several identical opcodes).
+
+ * "Threaded code" in contrast, uses an explicit jump table and an explicit
+ * indirect jump instruction at the end of each opcode. Since the jump
+ * instruction is at a different address for each opcode, the CPU will make a
+ * separate prediction for each of these instructions, which is equivalent to
+ * predicting the second opcode of each opcode pair. These predictions have
+ * a much better chance to turn out valid, especially in small bytecode loops.
+
+ * A mispredicted branch on a modern CPU flushes the whole pipeline and
+ * can cost several CPU cycles (depending on the pipeline depth),
+ * and potentially many more instructions (depending on the pipeline width).
+ * A correctly predicted branch, however, is nearly free.
+
+ * At the time of this writing, the "threaded code" version is up to 15-20%
+ * faster than the normal "switch" version, depending on the compiler and the
+ * CPU architecture.
+
+ * NOTE: care must be taken that the compiler doesn't try to "optimize" the
+ * indirect jumps by sharing them between all opcodes. Such optimizations
+ * can be disabled on gcc by using the -fno-gcse flag (or possibly
+ * -fno-crossjumping).
+ */
 
 int vm_run(struct vm * restrict vm) {
 #include "jump_table.h"

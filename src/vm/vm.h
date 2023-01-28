@@ -19,6 +19,7 @@ struct frame {
 struct state {
 	struct symbol_table *st;
 	struct object **consts;
+	size_t nconsts;
 	struct object *globals[GLOBAL_SIZE];
 };
 
@@ -30,8 +31,11 @@ struct vm {
 	uint32_t frame_idx;
 };
 
+struct state new_state();
 struct vm *new_vm(struct bytecode bytecode);
+struct vm *new_vm_with_state(struct bytecode bytecode, struct state state);
 int vm_run(struct vm * restrict vm);
 struct object *vm_last_popped_stack_elem(struct vm * restrict vm);
+void vm_dispose(struct vm *vm);
 
 #endif

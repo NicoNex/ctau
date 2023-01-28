@@ -18,8 +18,8 @@ int compiler_add_inst(struct compiler *c, uint8_t *ins, size_t len) {
 
 int compiler_add_const(struct compiler *c, struct object *o) {
 	int pos = c->nconsts;
-	c->consts = realloc(c->consts, sizeof(struct object *) * ++c->nconsts);
-	c->consts[pos] = o;
+	*c->consts = realloc(*c->consts, sizeof(struct object *) * ++c->nconsts);
+	(*c->consts)[pos] = o;
 	return pos;
 }
 
@@ -205,16 +205,17 @@ int compiler_load_symbol(struct compiler *c, struct symbol *s) {
 struct bytecode compiler_bytecode(struct compiler *c) {
 	return (struct bytecode) {
 		.insts = c->scopes[c->scope_index].insts,
-		.consts = c->consts,
+		.consts = *c->consts,
 		.len = c->scopes[c->scope_index].len,
 		.nconsts = c->nconsts
 	};
 }
 
-struct compiler *new_compiler_with_state(struct symbol_table *st, struct object **consts) {
+struct compiler *new_compiler_with_state(struct symbol_table *st, struct object ***consts, size_t nconsts) {
 	struct compiler *c = calloc(1, sizeof(struct compiler));
 	c->st = st;
 	c->consts = consts;
+	c->nconsts = nconsts;
 	c->scopes = malloc(sizeof(struct scope));
 	c->scopes[0] = (struct scope) {0};
 	c->nscopes = 1;
@@ -228,8 +229,14 @@ struct compiler *new_compiler() {
 	c->scopes = malloc(sizeof(struct scope));
 	c->scopes[0] = (struct scope) {0};
 	c->nscopes = 1;
+	// TODO: find an elegant way to free this address.
+	c->consts = calloc(1, sizeof(struct object **));
 
 	//TODO: define builtins.
 	return c;
 }
 
+void compiler_dispose(struct compiler *c) {
+	free(c->scopes);
+	free(c);
+}

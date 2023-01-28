@@ -47,7 +47,7 @@ struct scope {
 };
 
 struct compiler {
-	struct object **consts;
+	struct object ***consts;
 	size_t nconsts;
 	struct scope *scopes;
 	size_t nscopes;
@@ -83,8 +83,9 @@ struct symbol *compiler_define(struct compiler *c, char *name);
 int compiler_load_symbol(struct compiler *c, struct symbol *s);
 struct symbol *compiler_resolve(struct compiler *c, char *name);
 struct bytecode compiler_bytecode(struct compiler *c);
-struct compiler *new_compiler_with_state(struct symbol_table *st, struct object **consts);
+struct compiler *new_compiler_with_state(struct symbol_table *st, struct object ***consts, size_t nconsts);
 struct compiler *new_compiler();
+void compiler_dispose(struct compiler *c);
 
 // TODO: eventually remove these.
 struct symbol_table *new_symbol_table();
