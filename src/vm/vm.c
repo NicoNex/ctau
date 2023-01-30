@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "vm.h"
 #include "../obj/obj.h"
@@ -104,6 +105,31 @@ static inline double to_double(struct object * restrict o) {
 	return o->data.f;
 }
 
+static inline uint32_t is_truthy(struct object * restrict o) {
+	switch (o->type) {
+	case obj_boolean:
+		return o == true_obj;
+	case obj_integer:
+		return o->data.i != 0;
+	case obj_float:
+		return o->data.f != 0;
+	case obj_null:
+		return 0;
+	default:
+		return 1;
+	}
+}
+
+static inline void unsupported_operator_error(char *op, struct object *l, struct object *r) {
+	printf("unsupported operator '%s' for types %s and %s\n", op, otype_str(l->type), otype_str(r->type));
+	exit(1);
+}
+
+static inline void unsupported_prefix_operator_error(char *op, struct object *o) {
+	printf("unsupported operator '%s' for type %s\n", op, otype_str(o->type));
+	exit(1);
+}
+
 static inline void vm_exec_add(struct vm * restrict vm) {
 	struct object *right = unwrap(vm_stack_pop(vm));
 	struct object *left = unwrap(vm_stack_pop(vm));
@@ -134,8 +160,105 @@ static inline void vm_exec_sub(struct vm * restrict vm) {
 		double r = to_double(right);
 		vm_stack_push(vm, new_float_obj(l - r));
 	} else {
-		puts("unsupported operator '-' for the two types");
-		exit(1);
+		unsupported_operator_error("-", left, right);
+	}
+}
+
+static inline void vm_exec_mul(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	if (M_ASSERT(left, right, obj_integer)) {
+		vm_stack_push(vm, new_integer_obj(left->data.i * right->data.i));
+	} else if (M_ASSERT2(left, right, obj_integer, obj_float)) {
+		double l = to_double(left);
+		double r = to_double(right);
+		vm_stack_push(vm, new_float_obj(l * r));
+	} else {
+		unsupported_operator_error("*", left, right);
+	}
+}
+
+static inline void vm_exec_div(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	if (M_ASSERT(left, right, obj_integer)) {
+		vm_stack_push(vm, new_integer_obj(left->data.i / right->data.i));
+	} else if (M_ASSERT2(left, right, obj_integer, obj_float)) {
+		double l = to_double(left);
+		double r = to_double(right);
+		vm_stack_push(vm, new_float_obj(l / r));
+	} else {
+		unsupported_operator_error("/", left, right);
+	}
+}
+
+static inline void vm_exec_mod(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	if (!M_ASSERT(left, right, obj_integer)) {
+		unsupported_operator_error("%", left, right);
+	}
+	vm_stack_push(vm, new_integer_obj(left->data.i % right->data.i));
+}
+
+static inline void vm_exec_and(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	vm_stack_push(vm, parse_bool(is_truthy(left) && is_truthy(right)));
+}
+
+static inline void vm_exec_or(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	vm_stack_push(vm, parse_bool(is_truthy(left) || is_truthy(right)));
+}
+
+static inline void vm_exec_eq(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	if (M_ASSERT2(left, right, obj_boolean, obj_null)) {
+		vm_stack_push(vm, parse_bool(left == right));
+	} else if (M_ASSERT(left, right, obj_integer)) {
+		vm_stack_push(vm, parse_bool(left->data.i == right->data.i));
+	} else if (M_ASSERT2(left, right, obj_integer, obj_float)) {
+		double l = to_double(left);
+		double r = to_double(right);
+		vm_stack_push(vm, parse_bool(l == r));
+	} else if (M_ASSERT(left, right, obj_string)) {
+		char *l = left->data.str;
+		char *r = right->data.str;
+		struct object *res = left->len == right->len ? parse_bool(strcmp(l, r) == 0) : false_obj;
+		vm_stack_push(vm, res);
+	} else {
+		vm_stack_push(vm, false_obj);
+	}
+}
+
+static inline void vm_exec_not_eq(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+	struct object *left = unwrap(vm_stack_pop(vm));
+
+	if (M_ASSERT2(left, right, obj_boolean, obj_null)) {
+		vm_stack_push(vm, parse_bool(left != right));
+	} else if (M_ASSERT(left, right, obj_integer)) {
+		vm_stack_push(vm, parse_bool(left->data.i != right->data.i));
+	} else if (M_ASSERT2(left, right, obj_integer, obj_float)) {
+		double l = to_double(left);
+		double r = to_double(right);
+		vm_stack_push(vm, parse_bool(l != r));
+	} else if (M_ASSERT(left, right, obj_string)) {
+		char *l = left->data.str;
+		char *r = right->data.str;
+		struct object *res = left->len == right->len ? parse_bool(strcmp(l, r) != 0) : false_obj;
+		vm_stack_push(vm, res);
+	} else {
+		vm_stack_push(vm, false_obj);
 	}
 }
 
@@ -150,11 +273,11 @@ static inline void vm_exec_greater_than(struct vm * restrict vm) {
 		double r = to_double(right);
 		vm_stack_push(vm, parse_bool(l > r));
 	} else if (M_ASSERT(left, right, obj_string)) {
-		puts("comparing two strings is not yet supported");
-		exit(1);
+		char *l = left->data.str;
+		char *r = right->data.str;
+		vm_stack_push(vm, parse_bool(strcmp(l, r) > 0));
 	} else {
-		puts("unsupported operator '>' for the two types");
-		exit(1);
+		unsupported_operator_error(">", left, right);
 	}
 }
 
@@ -169,11 +292,37 @@ static inline void vm_exec_greater_than_eq(struct vm * restrict vm) {
 		double r = to_double(right);
 		vm_stack_push(vm, parse_bool(l >= r));
 	} else if (M_ASSERT(left, right, obj_string)) {
-		puts("comparing two strings is not yet supported");
-		exit(1);
+		char *l = left->data.str;
+		char *r = right->data.str;
+		vm_stack_push(vm, parse_bool(strcmp(l, r) >= 0));
 	} else {
-		puts("unsupported operator '>' for the two types");
-		exit(1);
+		unsupported_operator_error(">", left, right);
+	}
+}
+
+static inline void vm_exec_minus(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+
+	switch (right->type) {
+	case obj_integer:
+		vm_stack_push(vm, new_integer_obj(-right->data.i));
+	case obj_float:
+		vm_stack_push(vm, new_float_obj(-right->data.f));
+	default:
+		unsupported_prefix_operator_error("-", right);
+	}
+}
+
+static inline void vm_exec_bang(struct vm * restrict vm) {
+	struct object *right = unwrap(vm_stack_pop(vm));
+
+	switch (right->type) {
+	case obj_boolean:
+		vm_stack_push(vm, parse_bool(!right->data.i));
+	case obj_null:
+		vm_stack_push(vm, true_obj);
+	default:
+		vm_stack_push(vm, false_obj);
 	}
 }
 
@@ -220,21 +369,6 @@ static inline void vm_exec_return_value(struct vm * restrict vm) {
 
 struct object *vm_last_popped_stack_elem(struct vm * restrict vm) {
 	return vm->stack[vm->sp];
-}
-
-static inline uint32_t is_truthy(struct object * restrict o) {
-	switch (o->type) {
-	case obj_boolean:
-		return o == true_obj;
-	case obj_integer:
-		return o->data.i != 0;
-	case obj_float:
-		return o->data.f != 0;
-	case obj_null:
-		return 0;
-	default:
-		return 1;
-	}
 }
 
 /*
@@ -338,27 +472,27 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_MUL: {
-		UNHANDLED();
+		vm_exec_mul(vm);
 		DISPATCH();
 	}
 
 	TARGET_DIV: {
-		UNHANDLED();
+		vm_exec_div(vm);
 		DISPATCH();
 	}
 
 	TARGET_MOD: {
-		UNHANDLED();
+		vm_exec_mod(vm);
 		DISPATCH();
 	}
 
 	TARGET_BW_AND: {
-		UNHANDLED();
+		vm_exec_and(vm);
 		DISPATCH();
 	}
 
 	TARGET_BW_OR: {
-		UNHANDLED();
+		vm_exec_or(vm);
 		DISPATCH();
 	}
 
@@ -383,22 +517,22 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_AND: {
-		UNHANDLED();
+		vm_exec_and(vm);
 		DISPATCH();
 	}
 
 	TARGET_OR: {
-		UNHANDLED();
+		vm_exec_or(vm);
 		DISPATCH();
 	}
 
 	TARGET_EQUAL: {
-		UNHANDLED();
+		vm_exec_eq(vm);
 		DISPATCH();
 	}
 
 	TARGET_NOT_EQUAL: {
-		UNHANDLED();
+		vm_exec_not_eq(vm);
 		DISPATCH();
 	}
 
@@ -408,17 +542,17 @@ int vm_run(struct vm * restrict vm) {
 	}
 
 	TARGET_GREATER_THAN_EQUAL: {
-		UNHANDLED();
+		vm_exec_greater_than_eq(vm);
 		DISPATCH();
 	}
 
 	TARGET_MINUS: {
-		UNHANDLED();
+		vm_exec_minus(vm);
 		DISPATCH();
 	}
 
 	TARGET_BANG: {
-		UNHANDLED();
+		vm_exec_bang(vm);
 		DISPATCH();
 	}
 
