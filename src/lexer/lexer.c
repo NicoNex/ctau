@@ -138,6 +138,91 @@ static void lex_minus(struct lexer *l) {
 	l->state = lex_expression;
 }
 
+static void lex_times(struct lexer *l) {
+	switch (next(l)) {
+	case '=':
+		emit(l, item_asterisk_assign);
+		break;
+
+	default:
+		backup(l);
+		emit(l, item_asterisk);
+		break;
+	}
+
+	l->state = lex_expression;
+}
+
+static void lex_slash(struct lexer *l) {
+	switch (next(l)) {
+	case '=':
+		emit(l, item_slash_assign);
+		break;
+
+	default:
+		backup(l);
+		emit(l, item_asterisk);
+		break;
+	}
+
+	l->state = lex_expression;
+}
+
+static void lex_mod(struct lexer *l) {
+	switch (next(l)) {
+	case '=':
+		emit(l, item_modulus_assign);
+		break;
+
+	default:
+		backup(l);
+		emit(l, item_modulus);
+		break;
+	}
+
+	l->state = lex_expression;
+}
+
+static void lex_string(struct lexer *l) {
+	for (;;) {
+		switch (next(l)) {
+		case '\\': {
+			int n = next(l);
+			if (n != eof && n != '\n') {
+				break;
+			}
+		}
+
+		case eof:
+		case '\n':
+			puts("lexer: unterminated quoted string");
+			l->state = NULL;
+			return;
+
+		case '"':
+			backup(l);
+			goto end;
+		}
+	}
+
+end:
+	emit(l, item_string);
+	next(l);
+	ignore(l);
+	l->state = lex_expression;
+}
+
+static void lex_raw_string(struct lexer *l) {
+	if (peek(l) == '`') {
+		emit(l, item_rawstring);
+		next(l);
+		ignore(l);
+		l->state = lex_expression;
+	}
+	next(l);
+	l->state = lex_raw_string;
+}
+
 static void lex_number(struct lexer *l) {
 	enum item_type type = item_int;
 	char *digits = "0123456789";
@@ -218,6 +303,59 @@ static void lex_greater_than(struct lexer *l) {
 	l->state = lex_expression;
 }
 
+static void lex_and(struct lexer *l) {
+	switch (next(l)) {
+	case '&':
+		emit(l, item_and);
+		break;
+
+	case '=':
+		emit(l, item_bw_and_assign);
+		break;
+
+	default:
+		backup(l);
+		emit(l, item_bw_and);
+		break;
+	}
+
+	l->state = lex_expression;
+}
+
+static void lex_or(struct lexer *l) {
+	switch (next(l)) {
+	case '|':
+		emit(l, item_or);
+		break;
+
+	case '=':
+		emit(l, item_bw_or_assign);
+		break;
+
+	default:
+		backup(l);
+		emit(l, item_bw_or);
+		break;
+	}
+
+	l->state = lex_expression;
+}
+
+static void lex_xor(struct lexer *l) {
+	switch (next(l)) {
+	case '=':
+		emit(l, item_bw_xor_assign);
+		break;
+
+	default:
+		backup(l);
+		emit(l, item_bw_xor);
+		break;
+	}
+
+	l->state = lex_expression;
+}
+
 static void lex_expression(struct lexer *l) {
 	int c = next(l);
 
@@ -267,6 +405,15 @@ static void lex_expression(struct lexer *l) {
 	case '-':
 		SETSTATE(lex_minus);
 
+	case '*':
+		SETSTATE(lex_times);
+
+	case '/':
+		SETSTATE(lex_slash);
+
+	case '%':
+		SETSTATE(lex_mod);
+
 	case '=': {
 		if (next(l) == '=') {
 			emit(l, item_equals);
@@ -277,11 +424,64 @@ static void lex_expression(struct lexer *l) {
 		return;
 	}
 
+	case '!':
+		if (next(l) == '=') {
+			emit(l, item_not_equals);
+		} else {
+			backup(l);
+			emit(l, item_bang);
+		}
+		return;
+
+	case '~':
+		emit(l, item_bw_not);
+		return;
+
 	case '<':
 		SETSTATE(lex_less_than);
 
 	case '>':
 		SETSTATE(lex_greater_than);
+
+	case '&':
+		SETSTATE(lex_and);
+
+	case '|':
+		SETSTATE(lex_or);
+
+	case '^':
+		SETSTATE(lex_xor);
+
+	case '"':
+		ignore(l);
+		SETSTATE(lex_string);
+
+	case '`':
+		ignore(l);
+		SETSTATE(lex_raw_string);
+
+	case '[':
+		emit(l, item_lbracket);
+		ignore_spaces(l);
+		return;
+
+	case ']':
+		emit(l, item_rbracket);
+		return;
+
+	case ':':
+		emit(l, item_colon);
+		return;
+
+	case '.':
+		emit(l, item_dot);
+		ignore_spaces(l);
+		return;
+
+	case '#':
+		accept_until(l, '\n');
+		ignore_spaces(l);
+		return;
 
 	case eof:
 		emit(l, item_eof);

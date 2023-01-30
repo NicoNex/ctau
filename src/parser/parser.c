@@ -109,6 +109,24 @@ static struct node *parse_less(struct parser *p, struct node *left) {
 	return new_less(left, parse_expr(p, prec));
 }
 
+static struct node *parse_less_eq(struct parser *p, struct node *left) {
+	enum precedence prec = cur_prec(p);
+	next(p);
+	return new_less_eq(left, parse_expr(p, prec));
+}
+
+static struct node *parse_greater(struct parser *p, struct node *left) {
+	enum precedence prec = cur_prec(p);
+	next(p);
+	return new_greater(left, parse_expr(p, prec));
+}
+
+static struct node *parse_greater_eq(struct parser *p, struct node *left) {
+	enum precedence prec = cur_prec(p);
+	next(p);
+	return new_greater_eq(left, parse_expr(p, prec));
+}
+
 static struct node *parse_assign(struct parser *p, struct node *left) {
 	next(p);
 	return new_assign(left, parse_expr(p, lowest));
@@ -459,12 +477,12 @@ static inline infixfn infix_parser(enum item_type type) {
 	// 	return parse_not_equals;
 	case item_lt:
 		return parse_less;
-	// case item_gt:
-	// 	return parse_greater;
-	// case item_lteq:
-	// 	return parse_lesseq;
-	// case item_gteq:
-	// 	return parse_greatereq;
+	case item_gt:
+		return parse_greater;
+	case item_lteq:
+		return parse_less_eq;
+	case item_gteq:
+		return parse_greater_eq;
 	// case item_and:
 	// 	return parse_and;
 	// case item_or:
