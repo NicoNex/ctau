@@ -2,6 +2,9 @@
 
 Tau is a dynamically-typed open source programming language designed to be minimal, fast and efficient.
 
+# This repo is unmantained
+After a while I managed to implement just the VM and the object system from this repo to the main one, so that's where the development continued. For this reason I decided to archive this repository. For the main one please visit [Tau](https://github.com/NicoNex/tau).
+
 ## CTau
 This is an experimental version of the Tau interpreter written in C that is currently work in progress and incomplete.
 For a stable Tau version refer to the installation section below. However if you would like to help with the development of CTau either by contributing code or suggestions you're more than welcome to do so.
